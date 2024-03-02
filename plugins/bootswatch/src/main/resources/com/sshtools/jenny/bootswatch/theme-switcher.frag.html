@@ -1,0 +1,13 @@
+<form id="themeSwitcherForm" method="POST" enctype="multipart/form-data" action="/bootswatch-theme">
+	<input type="hidden" name="returnTo" value="${tx.fullPath}"/>
+	<i class="bi-palette"></i>&nbsp;<select class="mb-2 w-75" style="font-size: 0.85rem;" onchange="this.form.submit()" id="bootswatchTheme" class="form-select" aria-label="${%bootswatchTheme.label}" name="theme">
+		<t:list themes>
+			<option value="${id}" ${selected:+selected}>${name}</option>
+		</t:list>
+	</select>
+	<noscript>
+		<button id="submitButton" class=" btn btn-primary" type="submit">
+			<span class="sr-only">${%select}</span>
+		</button>
+	</noscript>
+</form>

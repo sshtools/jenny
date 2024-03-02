@@ -1,0 +1,12 @@
+<t:list items>
+	<div class="alert alert-${style}" role="alert">
+		<t:if icon>
+			<i class="bi bi-${icon}"></i>
+		</t:if>
+		${title}
+		<t:if description>
+			<br/>
+			<small>${description}</small>
+		</t:if>
+	</div>
+</t:list>
