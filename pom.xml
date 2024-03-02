@@ -63,9 +63,9 @@
         <url>https://jadaptive.com</url>
     </organization>
     <inceptionYear>2023</inceptionYear>
-    <url>https://github.com/sshtools/bootlace</url>
+    <url>https://github.com/sshtools/jenny</url>
     <description>
-        A lightweight modular application framework. 
+        A lightweight modular web application framework. 
     </description>
     <licenses>
         <license>
@@ -85,8 +85,8 @@
         </repository>
     </distributionManagement>
     <scm>
-        <url>https://github.com/sshtools/bootlace</url>
-        <connection>scm:git:https://github.com/sshtools/bootlace.git</connection>
+        <url>https://github.com/sshtools/jenny</url>
+        <connection>scm:git:https://github.com/sshtools/jenny.git</connection>
     </scm>
     
 	<dependencies>
