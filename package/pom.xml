@@ -1,0 +1,149 @@
+<!--
+
+    Copyright © 2023 JAdaptive Limited (support@jadaptive.com)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.sshtools</groupId>
+        <artifactId>jenny</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+    <artifactId>jenny-package</artifactId>
+    <name>Jenny - Package</name>
+    <packaging>jpackage</packaging>
+    <properties>
+        <tentackle.version>21.15.2.0</tentackle.version>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jenny-boot</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
+    <profiles>
+        <profile>
+            <id>installers</id>
+            <build>
+                <finalName>jenny</finalName>
+                <plugins>
+                    <plugin>
+                        <groupId>com.sshtools</groupId>
+                        <artifactId>copy-all-dependencies-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>jenny-logging</id>
+                                <goals>
+                                    <goal>copy-all-dependencies</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>
+                                        ${project.build.directory}/jenny-logging</outputDirectory>
+                                    <artifacts>
+                                        <artifact>
+                                            ${project.groupId}:jenny-logging:${project.version}</artifact>
+                                    </artifacts>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>jenny-api</id>
+                                <goals>
+                                    <goal>copy-all-dependencies</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>
+                                        ${project.build.directory}/jenny-api</outputDirectory>
+                                    <artifacts>
+                                        <artifact>
+                                            ${project.groupId}:jenny-api:${project.version}</artifact>
+                                    </artifacts>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>jenny-web</id>
+                                <goals>
+                                    <goal>copy-all-dependencies</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>
+                                        ${project.build.directory}/jenny-web</outputDirectory>
+                                    <artifacts>
+                                        <artifact>
+                                            ${project.groupId}:jenny-web:${project.version}</artifact>
+                                    </artifacts>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.tentackle</groupId>
+                        <artifactId>tentackle-jlink-maven-plugin</artifactId>
+                        <configuration>
+                            <skip>false</skip>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>default-jpackage</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jpackage</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>3.1.1</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>3.1.1</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.tentackle</groupId>
+                <artifactId>tentackle-jlink-maven-plugin</artifactId>
+                <version>${tentackle.version}</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <skip>true</skip>
+                    <mainModule>com.sshtools.jenny.boot</mainModule>
+                    <mainClass>com.sshtools.jenny.boot.Jenny</mainClass>
+                    <resourcesDirectory>src/main/resources</resourcesDirectory>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

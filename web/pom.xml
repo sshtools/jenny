@@ -16,44 +16,44 @@
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>com.sshtools</groupId>
-		<artifactId>jenny</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
-	</parent>
-	<artifactId>jenny-web</artifactId>
-	<name>Jenny - Web</name>
-	<dependencies>
-		
-		<!-- Framework Provided -->
-		
-		<dependency>
-			<groupId>com.sshtools</groupId>
-			<artifactId>bootlace-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>jenny-api</artifactId>
-			<version>${project.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		
-		<!-- Required -->
-		
-		<dependency>
-			<groupId>com.sshtools</groupId>
-			<artifactId>uhttpd</artifactId>
-			<version>0.9.6-SNAPSHOT</version> 
-		</dependency>
-		<dependency>
-			<groupId>com.sshtools</groupId>
-			<artifactId>tinytemplate</artifactId>
-            <version>0.9.3-SNAPSHOT</version>
-		</dependency>
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.sshtools</groupId>
+        <artifactId>jenny</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+    <artifactId>jenny-web</artifactId>
+    <name>Jenny - Web</name>
+    <dependencies>
 
-	</dependencies>
+        <!-- Framework Provided -->
+
+        <dependency>
+            <groupId>com.sshtools</groupId>
+            <artifactId>bootlace-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jenny-api</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Required -->
+
+        <dependency>
+            <groupId>com.sshtools</groupId>
+            <artifactId>uhttpd</artifactId>
+            <version>0.9.6-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sshtools</groupId>
+            <artifactId>tinytemplate</artifactId>
+            <version>0.9.3-SNAPSHOT</version>
+        </dependency>
+
+    </dependencies>
 </project>

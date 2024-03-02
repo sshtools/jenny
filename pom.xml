@@ -16,42 +16,43 @@
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.sshtools</groupId>
-	<artifactId>jenny</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<packaging>pom</packaging>
-	<name>Jenny - Lightweight Web Framework</name>
-	<modules>
-		<module>boot</module>
-		<module>api</module>
-		<module>frameworks</module>
-		<module>web</module>
-		<module>auth</module>
-		<module>plugins</module>
-	</modules>
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.sshtools</groupId>
+    <artifactId>jenny</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>Jenny - Lightweight Web Framework</name>
+    <modules>
+        <module>boot</module>
+        <module>api</module>
+        <module>frameworks</module>
+        <module>web</module>
+        <module>auth</module>
+        <module>plugins</module>
+        <module>package</module>
+    </modules>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
         <maven.compiler.target>21</maven.compiler.target>
         <maven.compiler.source>21</maven.compiler.source>
 
-		<graalvm.version>0.9.25</graalvm.version>
-		<graalvm.pgo></graalvm.pgo>
-		<graalvm.compatibility></graalvm.compatibility>
-		<graalvm.gc></graalvm.gc>
+        <graalvm.version>0.9.25</graalvm.version>
+        <graalvm.pgo></graalvm.pgo>
+        <graalvm.compatibility></graalvm.compatibility>
+        <graalvm.gc></graalvm.gc>
 
-		<bootlace.version>0.0.1-SNAPSHOT</bootlace.version>
-		
+        <bootlace.version>0.0.1-SNAPSHOT</bootlace.version>
+
         <build.projectProperties>${basedir}/jadaptive.build.properties</build.projectProperties>
         <build.userProperties>${user.home}/.jadaptive.build.properties</build.userProperties>
         <build.quietProperties>true</build.quietProperties>
-	</properties>
-	
-   
+    </properties>
+
+
     <developers>
         <developer>
             <id>brett</id>
@@ -65,7 +66,7 @@
     <inceptionYear>2023</inceptionYear>
     <url>https://github.com/sshtools/jenny</url>
     <description>
-        A lightweight modular web application framework. 
+        A lightweight modular web application framework.
     </description>
     <licenses>
         <license>
@@ -88,34 +89,34 @@
         <url>https://github.com/sshtools/jenny</url>
         <connection>scm:git:https://github.com/sshtools/jenny.git</connection>
     </scm>
-    
-	<dependencies>
-	</dependencies>
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-api</artifactId>
-				<version>2.0.9</version>
-			</dependency>
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-jdk14</artifactId>
-				<version>2.0.9</version>
-			</dependency>
-			<dependency>
-				<groupId>com.sshtools</groupId>
-				<artifactId>bootlace-platform</artifactId>
-				<version>${bootlace.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.sshtools</groupId>
-				<artifactId>bootlace-api</artifactId>
-				<version>${bootlace.version}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
-	<repositories>
+
+    <dependencies>
+    </dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>2.0.9</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-jdk14</artifactId>
+                <version>2.0.9</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sshtools</groupId>
+                <artifactId>bootlace-platform</artifactId>
+                <version>${bootlace.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sshtools</groupId>
+                <artifactId>bootlace-api</artifactId>
+                <version>${bootlace.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <repositories>
         <repository>
             <id>npm2mvn</id>
             <url>https://npm2mvn.jadaptive.com</url>
@@ -123,14 +124,14 @@
         <repository>
             <id>oss-snapshots</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-            <snapshots/>
+            <snapshots />
             <releases>
                 <enabled>false</enabled>
             </releases>
         </repository>
     </repositories>
-	<build>
-		<plugins>
+    <build>
+        <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>properties-maven-plugin</artifactId>
@@ -150,28 +151,42 @@
                     </execution>
                 </executions>
             </plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<release>21</release>
-					<compilerArgs>
-						<arg>-Aproject=${project.groupId}/${project.artifactId}</arg>
-					</compilerArgs>
-				</configuration>
-			</plugin>
-		</plugins>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>com.sshtools</groupId>
-					<artifactId>bootlace-maven-plugin</artifactId>
-					<version>${bootlace.version}</version>
-					<configuration>
-						<skip>true</skip>
-					</configuration>
-				</plugin>
-				
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <release>21</release>
+                    <compilerArgs>
+                        <arg>-Aproject=${project.groupId}/${project.artifactId}</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>com.sshtools</groupId>
+                    <artifactId>copy-all-dependencies-maven-plugin</artifactId>
+                    <version>0.9.0-SNAPSHOT</version>
+                </plugin>
+                <plugin>
+                    <groupId>com.github.akman</groupId>
+                    <artifactId>jpackage-maven-plugin</artifactId>
+                    <version>0.1.5</version>
+                </plugin>
+                <plugin>
+                    <groupId>com.sshtools</groupId>
+                    <artifactId>bootlace-maven-plugin</artifactId>
+                    <version>${bootlace.version}</version>
+                    <configuration>
+                        <skip>true</skip>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>3.6.1</version>
+                </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>properties-maven-plugin</artifactId>
@@ -274,9 +289,9 @@
                         <autoReleaseAfterClose>true</autoReleaseAfterClose>
                     </configuration>
                 </plugin>
-			</plugins>
-		</pluginManagement>
-	</build>
+            </plugins>
+        </pluginManagement>
+    </build>
     <profiles>
         <profile>
             <id>release-sign-artifacts</id>
