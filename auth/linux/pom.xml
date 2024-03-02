@@ -52,7 +52,7 @@
 
 		<!-- Required -->
 		<dependency>
-			<groupId>org.kohsuke</groupId>
+			<groupId>com.sshtools</groupId>
 			<artifactId>libpam4j</artifactId>
 			<version>1.12-SNAPSHOT</version>
 		</dependency>
