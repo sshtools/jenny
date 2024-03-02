@@ -120,6 +120,14 @@
             <id>npm2mvn</id>
             <url>https://npm2mvn.jadaptive.com</url>
         </repository>
+        <repository>
+            <id>oss-snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <snapshots/>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
     </repositories>
 	<build>
 		<plugins>
