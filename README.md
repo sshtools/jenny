@@ -10,7 +10,9 @@ as simple as possible and avoid requiring large external 3rd party libraries and
 
  * [Bootlace](https://github.com/sshtools/bootlace). A JPMS based plugin framework.
  * [uHTTPD](https://github.com/sshtools/uhttpd). An embeddable HTTP/HTTPs server.
- * [tinytemplate](https://github.com/sshtools/tinytemplate). A simple but flexible string templating library .
+ * [tinytemplate](https://github.com/sshtools/tinytemplate). A simple but flexible string templating library.
+
+**This framework does *not* use the servlet API, instead it relies on **uHTTPD**'s native API.**
 
 ## Features
 
