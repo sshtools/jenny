@@ -28,7 +28,7 @@ by multiple dependent plugins. This saves individual plugins including their own
 such libraries, the framework is guaranteed to provide them.  
 
  * [dbus](framworks/dbus/README.md). Provides access to [DBus-Java](https://github.com/hypfvieh/dbus-java), used to access and provide services over [D-Bus](https://www.freedesktop.org/wiki/Software/dbus).
- * [dbus](framworks/logging/README.md). Adds the [SLF4J](http://slf4j.org/) logging framework.
+ * [logging](framworks/logging/README.md). Adds the [SLF4J](http://slf4j.org/) logging framework.
  * [jna](framworks/jna/README.md). Allows plugins to access other native libraries.
 
 ### Plugins
