@@ -1,6 +1,6 @@
 # Jenny
 
-A lightweight modular web application framework for Java based on [Bootlace](https://github.com/sshtools/bootlace), [tinytemplate(https://github.com/sshtools/tinytemplate) and [uHTTP](https://github.com/sshtools/uhttpd)
+A lightweight modular web application framework for Java based on [Bootlace](https://github.com/sshtools/bootlace), [tinytemplate](https://github.com/sshtools/tinytemplate) and [uHTTP](https://github.com/sshtools/uhttpd)
 that aims to be fast, flexible and fun to use.
 
 ## Design
