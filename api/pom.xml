@@ -37,4 +37,12 @@
 		</dependency>
 
 	</dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.sshtools</groupId>
+                <artifactId>bootlace-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 </project>

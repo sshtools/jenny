@@ -130,6 +130,16 @@
             </releases>
         </repository>
     </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>oss-snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <snapshots />
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </pluginRepository>
+    </pluginRepositories>
     <build>
         <plugins>
             <plugin>
@@ -178,9 +188,15 @@
                     <groupId>com.sshtools</groupId>
                     <artifactId>bootlace-maven-plugin</artifactId>
                     <version>${bootlace.version}</version>
-                    <configuration>
-                        <skip>true</skip>
-                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>generate-plugin</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>generate-plugin</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

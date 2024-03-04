@@ -33,21 +33,4 @@
 		<module>jna</module>
 		<module>dbus</module>
 	</modules>
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>com.sshtools</groupId>
-				<artifactId>bootlace-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>generate-plugin</id>
-						<phase>package</phase>
-						<goals>
-							<goal>generate-plugin</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
 </project>

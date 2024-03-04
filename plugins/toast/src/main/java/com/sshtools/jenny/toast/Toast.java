@@ -36,13 +36,16 @@ import com.sshtools.tinytemplate.Templates.TemplateModel;
 public class Toast implements Plugin {
 	final static Log LOG = Logs.of(WebLog.JOBS);
 	
-	private final Web web = PluginContext.$().plugin(Web.class);
-	private final Io io = PluginContext.$().plugin(Io.class);
+	private Web web;
+	private Io io;
 
 	private WebModuleHandle webModule;
 	
 	@Override
 	public void afterOpen(PluginContext context) {
+		
+		web = context.plugin(Web.class);
+		io = context.plugin(Io.class);
 		
 		webModule = web.module(new WebModule.Builder().
 				withRequires(io.webModule()).

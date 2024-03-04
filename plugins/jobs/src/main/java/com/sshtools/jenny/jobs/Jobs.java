@@ -108,7 +108,7 @@ public class Jobs implements Plugin {
 	}
 	
 	private Web web;
-	private Io io = PluginContext.$().plugin(Io.class);
+	private Io io;
 	private Map<Queue, ScheduledExecutorService> queues = new HashMap<>();
 	private Map<String, List<Handle<?>>> jobs = new ConcurrentHashMap<>();
 	private Map<UUID, Handle<?>> jobsByUuid = new ConcurrentHashMap<>();
@@ -119,6 +119,7 @@ public class Jobs implements Plugin {
 	@Override
 	public void afterOpen(PluginContext context) {
 		web = context.plugin(Web.class);
+		io = context.plugin(Io.class);
 		
 		webModule = web.module(new WebModule.Builder().
 				withRequires(io.webModule()).

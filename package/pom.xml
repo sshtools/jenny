@@ -49,44 +49,28 @@
                         <artifactId>copy-all-dependencies-maven-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>jenny-logging</id>
+                                <id>jenny-bootstrap</id>
                                 <goals>
                                     <goal>copy-all-dependencies</goal>
                                 </goals>
                                 <configuration>
                                     <outputDirectory>
-                                        ${project.build.directory}/jenny-logging</outputDirectory>
+                                        ${project.build.directory}/bootstrap</outputDirectory>
                                     <artifacts>
-                                        <artifact>
-                                            ${project.groupId}:jenny-logging:${project.version}</artifact>
+                                        <artifact>${project.groupId}:jenny-logging:${project.version}</artifact>
                                     </artifacts>
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>jenny-api</id>
+                                <id>jenny-app</id>
                                 <goals>
                                     <goal>copy-all-dependencies</goal>
                                 </goals>
                                 <configuration>
-                                    <outputDirectory>
-                                        ${project.build.directory}/jenny-api</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/app</outputDirectory>
                                     <artifacts>
-                                        <artifact>
-                                            ${project.groupId}:jenny-api:${project.version}</artifact>
-                                    </artifacts>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>jenny-web</id>
-                                <goals>
-                                    <goal>copy-all-dependencies</goal>
-                                </goals>
-                                <configuration>
-                                    <outputDirectory>
-                                        ${project.build.directory}/jenny-web</outputDirectory>
-                                    <artifacts>
-                                        <artifact>
-                                            ${project.groupId}:jenny-web:${project.version}</artifact>
+                                        <artifact>${project.groupId}:jenny-api:${project.version}</artifact>
+                                        <artifact>${project.groupId}:jenny-web:${project.version}</artifact>
                                     </artifacts>
                                 </configuration>
                             </execution>
@@ -146,4 +130,14 @@
             </plugin>
         </plugins>
     </build>
+    <repositories>
+        <repository>
+            <id>oss-snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <snapshots />
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+    </repositories>
 </project>

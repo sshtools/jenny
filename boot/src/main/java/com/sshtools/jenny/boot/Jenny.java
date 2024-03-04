@@ -18,6 +18,8 @@ package com.sshtools.jenny.boot;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.logging.LogManager;
 
@@ -32,6 +34,7 @@ import com.sshtools.bootlace.api.GAV;
 import com.sshtools.bootlace.api.Repository;
 import com.sshtools.bootlace.api.ResolutionMonitor;
 import com.sshtools.bootlace.platform.Bootlace;
+import com.sshtools.bootlace.platform.DynamicLayer;
 
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarBuilder;
@@ -40,11 +43,20 @@ import me.tongfei.progressbar.ProgressBarStyle;
 public class Jenny {
 	
 	static {
-		var stream = Jenny.class.getClassLoader().getResourceAsStream("logging.properties");
-		try {
-			LogManager.getLogManager().readConfiguration(stream);
-		} catch (IOException e) {
-			throw new UncheckedIOException(e);
+		var cfg = Paths.get(System.getProperty("jenny.logging", "logging.properties"));
+		if(Files.exists(cfg)) {
+			try(var stream = Files.newInputStream(cfg)) {
+				LogManager.getLogManager().readConfiguration(stream);
+			} catch (IOException e) {
+				throw new UncheckedIOException(e);
+			}
+		}
+		else {
+			try(var stream = Jenny.class.getClassLoader().getResourceAsStream("logging.properties")) {
+				LogManager.getLogManager().readConfiguration(stream);
+			} catch (IOException e) {
+				throw new UncheckedIOException(e);
+			}
 		}
 	}
 
@@ -85,8 +97,17 @@ public class Jenny {
 				append("READY!").
 				style(S.boldOff()).
 				println(terminal);
-			terminal.flush();
 		
+		var plugins = jenny.getLayer("plugins");
+		new AttributedStringBuilder().
+				append("\nDrop plugins into ").
+				style(S.bold()).
+				append((((DynamicLayer)plugins).path().toAbsolutePath().toString())).
+				style(S.boldOff()).
+				println(terminal);
+		
+		
+		terminal.flush();
 		jenny.waitFor();
 	}
 
