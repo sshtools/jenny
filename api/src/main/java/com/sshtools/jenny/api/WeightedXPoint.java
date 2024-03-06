@@ -13,17 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-open module com.sshtools.jenny.boot {
-	exports com.sshtools.jenny.boot;
-	
-//	requires layrry.core;
-	requires com.sshtools.bootlace.platform;
-	requires org.jline;
-	requires progressbar;
+package com.sshtools.jenny.api;
 
-	/* TODO: For now, app layer can't see these modules without them being here */
-	requires java.net.http;
-	requires java.scripting;
-	requires java.logging;
-//	requires java.sql; /* TODO I mean why gson! */
+public interface WeightedXPoint extends XPoint {
+	int weight();
 }

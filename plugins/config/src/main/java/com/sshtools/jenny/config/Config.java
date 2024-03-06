@@ -22,7 +22,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.Locale;
@@ -30,25 +29,25 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
+import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.sshtools.bootlace.api.ConfigResolver;
+import com.sshtools.bootlace.api.ConfigResolver.Scope;
 import com.sshtools.bootlace.api.Logs;
 import com.sshtools.bootlace.api.Logs.Log;
-import com.sshtools.jenny.api.ApiLog;
 import com.sshtools.bootlace.api.Plugin;
 import com.sshtools.bootlace.api.PluginContext;
+import com.sshtools.jenny.api.ApiLog;
 import com.sshtools.jini.INI;
 import com.sshtools.jini.INIReader;
-import com.sshtools.jini.INIReader.MultiValueMode;
 import com.sshtools.jini.INIWriter;
 
 public class Config implements Plugin {
+
+	private static final String CONFIG_APP_ID = "jenny";
 	
 	private final static Log LOG = Logs.of(ApiLog.CONFIG);
-
-	public enum Scope {
-		USER, VENDOR
-	}
 
 	public interface Handle {
 
@@ -63,19 +62,21 @@ public class Config implements Plugin {
 	private final Map<Key, Handle> config = new ConcurrentHashMap<>();
 	private URLClassLoader bundleLoader;
 	private final ResourceBundle emptyBundle;
-	
+	private ConfigResolver configResolver;
+
 	public Config() {
 		try {
 			emptyBundle = new PropertyResourceBundle(new StringReader(""));
 		} catch (IOException e) {
 			throw new IllegalStateException("Impossible.");
 		}
+
+		configResolver = ConfigResolver.get(getClass().getModule().getLayer());
 	}
-	
+
 	@Override
 	public void afterOpen(PluginContext context) throws Exception {
-		bundleLoader = new URLClassLoader(new URL[] { resolveVendorDir().toUri().toURL() });
-		Plugin.super.afterOpen(context);
+		bundleLoader = new URLClassLoader(new URL[] { configResolver.resolveVendorDir(CONFIG_APP_ID).toUri().toURL() });
 	}
 
 	public ResourceBundle bundle(Plugin plugin, Locale locale) {
@@ -83,8 +84,7 @@ public class Config implements Plugin {
 			var bndl = ResourceBundle.getBundle(plugin.getClass().getName(), locale, bundleLoader);
 			LOG.info("Found vendor bundle for ''{0}'' in locale ''{1}''", plugin.getClass().getName(), locale);
 			return bndl;
-		}
-		catch(MissingResourceException mre) {
+		} catch (MissingResourceException mre) {
 			LOG.info("No vendor bundle for ''{0}'' in locale ''{1}''", plugin.getClass().getName(), locale);
 			return emptyBundle;
 		}
@@ -97,16 +97,16 @@ public class Config implements Plugin {
 			var cfg = config.get(key);
 			if (cfg == null) {
 
-				var iniFile = resolveIni(plugin, scope);
+				var iniFile = configResolver.resolve(CONFIG_APP_ID, scope, plugin.getClass(), "ini");
 				var ini = loadIni(iniFile);
-				
+
 				LOG.info("Configuration for ''{0}''[{1}] is @ ''{2}''", plugin.getClass().getName(), scope, iniFile);
 
 				cfg = new Handle() {
 
 					@Override
 					public void store() {
-						var wtr = new  INIWriter.Builder().build();
+						var wtr = new INIWriter.Builder().build();
 						try {
 							wtr.write(ini, iniFile);
 						} catch (IOException e) {
@@ -118,70 +118,29 @@ public class Config implements Plugin {
 					public INI ini() {
 						return ini;
 					}
+
+					@Override
+					public String toString() {
+						return iniFile.toString();
+					}
 				};
 				config.put(key, cfg);
 			}
 			return cfg;
 		}
 	}
-	private Path resolveIni(Plugin plugin, Scope scope) {
-		switch(scope) {
-		case VENDOR:
-			return resolveVendorPluginFile(plugin);
-		default:
-			return resolvePluginFile(plugin);			
-		}
-	}
 
 	private INI loadIni(Path path) {
-		if(Files.exists(path)) {
+		if (Files.exists(path)) {
 			try {
-				return new INIReader.Builder().
-						withMultiValueMode(MultiValueMode.SEPARATED).
-						build().read(path);
+				return new INIReader.Builder().build().read(path);
 			} catch (IOException e) {
 				throw new UncheckedIOException(e);
 			} catch (ParseException e) {
 				throw new IllegalArgumentException(MessageFormat.format("Failed to parse {0}", path), e);
 			}
-		}
-		else {
+		} else {
 			return INI.create();
 		}
 	}
-
-	private Path resolvePluginFile(Plugin plugin) {
-		return resolvePluginDir().resolve(resolveFile(plugin));
-	}
-
-	private Path resolveVendorPluginFile(Plugin plugin) {
-		return resolveVendorDir().resolve(resolveFile(plugin));
-	}
-
-	private Path resolveFile(Plugin plugin) {
-		return Paths.get(plugin.getClass().getName() + ".ini");
-	}
-
-	private Path resolvePluginDir() {
-		return checkDir(resolveConfDir().resolve("plugins"));
-	}
-
-	private Path resolveVendorDir() {
-		return checkDir(resolveConfDir().resolve("vendor"));
-	}
-
-	private Path resolveConfDir() {
-		return checkDir(Paths.get(System.getProperty("jenny.config", "config")));
-	}
-
-	private Path checkDir(Path path) {
-		try {
-			if (!Files.exists(path))
-				Files.createDirectories(path);
-			return path;
-		} catch (IOException e) {
-			throw new UncheckedIOException(e);
-		}
-	}
-
 }

@@ -23,34 +23,34 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.sshtools.uhttpd.UHTTPD.Session;
 
-public final class State  {
+public final class WebState  {
 	
-	private final static String USER = "state.user";
-	private final static String LOCALE = "state.locale";
+	private final static String USER = "webstate.user";
+	private final static String LOCALE = "webstate.locale";
 	
-	private final static Map<Session, State> map = new ConcurrentHashMap<>();
+	private final static Map<Session, WebState> map = new ConcurrentHashMap<>();
 	
 	private final Session session;
 	private final Map<String, Object> env = new ConcurrentHashMap<String, Object>();
 	
-	public static State get() {
+	public static WebState get() {
 		return get(Session.get());
 	}
 	
-	public static Optional<State> get(boolean create) {
+	public static Optional<WebState> get(boolean create) {
 		return Session.get(create).map(s -> get(s));
 	}
 	
-	public static State get(Session session) {
+	public static WebState get(Session session) {
 		var state = map.get(session);
 		if(state == null) {
-			state = new State(session);
+			state = new WebState(session);
 			map.put(session, state);
 		}
 		return state;
 	}
 	
-	State(Session session) {
+	WebState(Session session) {
 		this.session = session;
 	}
 	
@@ -85,7 +85,7 @@ public final class State  {
 		return env;
 	}
 	
-	public State locale(Locale locale) {
+	public WebState locale(Locale locale) {
 		env.put(LOCALE, locale);
 		return this;
 	}

@@ -188,15 +188,6 @@
                     <groupId>com.sshtools</groupId>
                     <artifactId>bootlace-maven-plugin</artifactId>
                     <version>${bootlace.version}</version>
-                    <executions>
-                        <execution>
-                            <id>generate-plugin</id>
-                            <phase>package</phase>
-                            <goals>
-                                <goal>generate-plugin</goal>
-                            </goals>
-                        </execution>
-                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

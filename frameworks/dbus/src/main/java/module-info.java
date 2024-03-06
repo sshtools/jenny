@@ -17,7 +17,7 @@ import com.sshtools.bootlace.api.Plugin;
 import com.sshtools.jenny.dbus.DBus;
 
 module com.sshtools.jenny.dbus {
-	requires com.sshtools.bootlace.api;
+	requires transitive com.sshtools.bootlace.api;
 	requires transitive org.freedesktop.dbus;
 	requires transitive static org.freedesktop.dbus.transport.jre;
 	exports com.sshtools.jenny.dbus;

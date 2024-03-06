@@ -76,6 +76,11 @@ public class XPoints {
 		public void close() {
 			onClose.accept(this);
 		}
+
+		@Override
+		public String toString() {
+			return "XPointGroup [extensions=" + extensions + "]";
+		}
 	}
 	
 	private List<XPointGroup> groups = new CopyOnWriteArrayList<>();
@@ -84,6 +89,17 @@ public class XPoints {
 	public <P extends XPointRef<INPUT, OUTPUT>, INPUT, OUTPUT> List<P> points(Class<OUTPUT> clazz) {
 		var l = new ArrayList<P>();
 		groups.forEach(grp -> l.addAll(grp.points(clazz)));
+		Collections.sort(l, (o1, o2) -> {
+			var v1 = 0;
+			if(o1 instanceof WeightedXPoint wp) {
+				v1 = wp.weight();
+			}
+			var v2 = 0;
+			if(o2 instanceof WeightedXPoint wp) {
+				v2 = wp.weight();
+			}
+			return Integer.compare(v1, v2);
+		});
 		return l;
 	}
 	

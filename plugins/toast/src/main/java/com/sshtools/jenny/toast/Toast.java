@@ -15,6 +15,8 @@
  */
 package com.sshtools.jenny.toast;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.json.Json;
@@ -22,6 +24,8 @@ import javax.json.JsonArray;
 
 import com.sshtools.bootlace.api.Logs;
 import com.sshtools.bootlace.api.Logs.Log;
+import com.sshtools.bootlace.api.Plugin;
+import com.sshtools.bootlace.api.PluginContext;
 import com.sshtools.jenny.bootstrap5.Alerts.Alert;
 import com.sshtools.jenny.io.Io;
 import com.sshtools.jenny.io.Io.IoChannel;
@@ -29,8 +33,6 @@ import com.sshtools.jenny.web.Web;
 import com.sshtools.jenny.web.WebLog;
 import com.sshtools.jenny.web.WebModule;
 import com.sshtools.jenny.web.WebModule.WebModuleHandle;
-import com.sshtools.bootlace.api.Plugin;
-import com.sshtools.bootlace.api.PluginContext;
 import com.sshtools.tinytemplate.Templates.TemplateModel;
 
 public class Toast implements Plugin {
@@ -40,6 +42,7 @@ public class Toast implements Plugin {
 	private Io io;
 
 	private WebModuleHandle webModule;
+	private final List<Alert> queuedAlerts = new ArrayList<>();
 	
 	@Override
 	public void afterOpen(PluginContext context) {
@@ -58,6 +61,9 @@ public class Toast implements Plugin {
 			io.contributor("toast", IoChannel::of)
 		);
 		
+		while(!queuedAlerts.isEmpty())
+			toast(queuedAlerts.remove(0));
+		
 	}
 	
 	public WebModuleHandle webModule() {
@@ -72,17 +78,22 @@ public class Toast implements Plugin {
 	}
 
 	public void toast(Alert alert) {
-		web.globalUiQueue().schedule(() -> { 
-			io.broadcast("toast", Json.createObjectBuilder().
-						add("type", "toast").
-						add("subtitle", "").
-						add("icon", alert.icon().orElse("")).
-						add("title", alert.title().get()).
-						add("style", alert.style().name().toLowerCase()).
-						add("description", alert.description().get().orElse("")).
-						add("actions", actions(alert)).
-						build());
-		}, 2, TimeUnit.SECONDS);
+		if(web == null) {
+			queuedAlerts.add(alert);			
+		}
+		else {
+			web.globalUiQueue().schedule(() -> { 
+				io.broadcast("toast", Json.createObjectBuilder().
+							add("type", "toast").
+							add("subtitle", "").
+							add("icon", alert.icon().orElse("")).
+							add("title", alert.title().get()).
+							add("style", alert.style().name().toLowerCase()).
+							add("description", alert.description().get().orElse("")).
+							add("actions", actions(alert)).
+							build());
+			}, 2, TimeUnit.SECONDS);
+		}
 		
 	}
 	
