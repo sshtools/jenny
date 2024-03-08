@@ -85,6 +85,11 @@ public class LinuxAuth implements Plugin {
 				throw new IllegalStateException("Failed to configure PAM.", pe);
 			}
 		}
+
+		@Override
+		public int weight() {
+			return 0;
+		}
 	}
 
 	private Api api;

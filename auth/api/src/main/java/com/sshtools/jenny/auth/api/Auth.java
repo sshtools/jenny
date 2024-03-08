@@ -26,25 +26,38 @@ import java.util.concurrent.TimeUnit;
 
 import com.sshtools.bootlace.api.Exceptions.InvalidCredentials;
 import com.sshtools.bootlace.api.Exceptions.InvalidUsernameOrPasswordException;
-import com.sshtools.jenny.api.Api;
-import com.sshtools.jenny.api.XPoint;
 import com.sshtools.bootlace.api.Plugin;
 import com.sshtools.bootlace.api.PluginContext;
+import com.sshtools.jenny.api.Api;
+import com.sshtools.jenny.api.WeightedXPoint;
 
 public class Auth implements Plugin {
 	
-	public interface PasswordAuthProvider extends XPoint {
+	@SuppressWarnings("serial")
+	public final static class AuthProviderDeniesException extends RuntimeException {
+
+		public AuthProviderDeniesException() {
+			super();
+		}
+
+		public AuthProviderDeniesException(String message) {
+			super(message);
+		}
+		
+	}
+	
+	public interface PasswordAuthProvider extends WeightedXPoint {
 		Optional<ExtendedUserPrincipal> logon(String username, char[] password);
 	}
 	
-	public interface ExternalAuthProvider extends XPoint {
+	public interface ExternalAuthProvider extends WeightedXPoint {
 		Optional<String> redirect(Optional<String> username, String returnTo);
 		
 		UserPrincipal complete(String response);
 	}
 	
-	public interface DirectAuthProvider extends XPoint {
-		Optional<UserPrincipal> logon(String path, Map<String, String> parameters);
+	public interface DirectAuthProvider extends WeightedXPoint {
+		Optional<UserPrincipal> logon(Map<String, String> parameters);
 	}
 	
 	public final static class ExternalAuthSession {
@@ -112,10 +125,10 @@ public class Auth implements Plugin {
 		return session.provider().complete(response); 
 	}
 	
-	public Optional<UserPrincipal> direct(String path, Map<String, String> parameters) {
+	public Optional<UserPrincipal> direct(Map<String, String> parameters) {
 		for(var prov : api.extensions().points(DirectAuthProvider.class)) {
 			var provInstance = prov.apply(null);
-			var logon = provInstance.logon(path, parameters);
+			var logon = provInstance.logon(parameters);
 			if(logon.isPresent())
 				return logon;
 		}
