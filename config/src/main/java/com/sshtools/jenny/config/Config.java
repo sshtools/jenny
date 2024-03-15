@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
-import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.sshtools.bootlace.api.ConfigResolver;
@@ -76,7 +75,7 @@ public class Config implements Plugin {
 
 	@Override
 	public void afterOpen(PluginContext context) throws Exception {
-		bundleLoader = new URLClassLoader(new URL[] { configResolver.resolveVendorDir(CONFIG_APP_ID).toUri().toURL() });
+		bundleLoader = new URLClassLoader(new URL[] { configResolver.resolveDir(CONFIG_APP_ID, Scope.VENDOR).toUri().toURL() });
 	}
 
 	public ResourceBundle bundle(Plugin plugin, Locale locale) {

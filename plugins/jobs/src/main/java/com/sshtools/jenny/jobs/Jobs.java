@@ -39,6 +39,8 @@ import javax.json.Json;
 
 import com.sshtools.bootlace.api.Logs;
 import com.sshtools.bootlace.api.Logs.Log;
+import com.sshtools.bootlace.api.Plugin;
+import com.sshtools.bootlace.api.PluginContext;
 import com.sshtools.jenny.io.Io;
 import com.sshtools.jenny.io.Io.Contributor;
 import com.sshtools.jenny.io.Io.IoChannel;
@@ -49,9 +51,7 @@ import com.sshtools.jenny.jobs.Job.StandardQueues;
 import com.sshtools.jenny.web.Web;
 import com.sshtools.jenny.web.WebLog;
 import com.sshtools.jenny.web.WebModule;
-import com.sshtools.jenny.web.WebModule.WebModuleHandle;
-import com.sshtools.bootlace.api.Plugin;
-import com.sshtools.bootlace.api.PluginContext;
+import com.sshtools.jenny.web.WebModule.WebModulesRef;
 import com.sshtools.tinytemplate.Templates.TemplateModel;
 import com.sshtools.uhttpd.UHTTPD.Status;
 import com.sshtools.uhttpd.UHTTPD.Transaction;
@@ -114,28 +114,23 @@ public class Jobs implements Plugin {
 	private Map<UUID, Handle<?>> jobsByUuid = new ConcurrentHashMap<>();
 	private Map<String, Contributor> ioContributors = new ConcurrentHashMap<>();
 	private Map<String, Sender> ioSenders = new ConcurrentHashMap<>();
-	private WebModuleHandle webModule;
+	private WebModule jobModule;
+	private WebModulesRef modules;
 	
 	@Override
 	public void afterOpen(PluginContext context) {
 		web = context.plugin(Web.class);
 		io = context.plugin(Io.class);
 		
-		webModule = web.module(new WebModule.Builder().
-				withRequires(io.webModule()).
-				withResource(Jobs.class, "job-progress.frag.js").
-				withUri("/job-progress.frag.js").
-				build());
-		
 		context.autoClose(
-			webModule,
+			modules = web.modules(jobModule = WebModule.of("/job-progress.frag.js", Jobs.class, "job-progress.frag.js", io.webModule())),
 			web.router().route().
 				handle("/job-cancel", this::actionCancel).
 				build());
 	}
 	
-	public WebModuleHandle webModule() {
-		return webModule;
+	public WebModule webModule() {
+		return jobModule;
 	}
 	
 	public List<Handle<?>> jobs(Class<?> jobCategory) {
@@ -370,7 +365,7 @@ public class Jobs implements Plugin {
 					bundle(Jobs.class);
 			}).toList());
 		
-		web.require(webModule, template);
+		web.require(template, modules);
 		
 		return template;
 	}

@@ -23,11 +23,14 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 
+import com.sshtools.bootlace.api.DependencyGraph.Dependency;
+import com.sshtools.bootlace.api.NodeModel;
 import com.sshtools.uhttpd.UHTTPD;
 import com.sshtools.uhttpd.UHTTPD.Handler;
 
-public final class WebModule {
+public final class WebModule implements NodeModel<WebModule> {
 
 	public enum Type {
 		CSS, JAVASCRIPT
@@ -37,8 +40,24 @@ public final class WebModule {
 		HEAD, BODYHEAD, BODYTAIL
 	}
 	
-	public interface WebModuleHandle extends Closeable {
-		WebModule webModule();
+	public interface WebModulesRef extends Closeable {
+		WebModule[] modules();
+	}
+	
+	public static WebModule of(String uri, Handler handler, WebModule... requires) {
+		return new Builder().
+				withUri(uri).
+				withHandler(handler).
+				withRequires(requires).
+				build();
+	}
+	
+	public static WebModule of(String uri, Class<?> base, String path, WebModule... requires) {
+		return new Builder().
+				withUri(uri).
+				withResource(base, path).
+				withRequires(requires).
+				build();
 	}
 	
 	public final static class Builder {
@@ -46,13 +65,19 @@ public final class WebModule {
 		private Optional<Type> type = Optional.empty();
 		private Optional<Placement> placement = Optional.empty();
 		private ResourceRef ref;
-		private final Set<WebModuleHandle> requires = new LinkedHashSet<>();
+		private final Set<WebModule> requires = new LinkedHashSet<>();
+		private Optional<Handler> handler = Optional.empty();
 		
-		public Builder withRequires(WebModuleHandle... requires) {
+		public Builder withHandler(Handler handler) {
+			this.handler = Optional.of(handler);
+			return this;
+		}
+		
+		public Builder withRequires(WebModule... requires) {
 			return withRequires(Arrays.asList(requires));
 		}
 		
-		public Builder withRequires(Collection<WebModuleHandle> requires) {
+		public Builder withRequires(Collection<WebModule> requires) {
 			this.requires.addAll(requires);
 			return this;
 		}
@@ -88,25 +113,29 @@ public final class WebModule {
 	}
 	
 	private final String uri;
-	private final ResourceRef ref;
+	private final Handler handler;
 	private final Placement placement;
 	private final Type type;
-	private final Set<WebModuleHandle> requires;
+	private final Set<WebModule> requires;
 	
 	private WebModule(Builder builder) {
 		this.uri = Objects.requireNonNull(builder.uri);
-		this.ref = Objects.requireNonNull(builder.ref);
-		this.type = builder.type.orElseGet(()-> ref.path().toLowerCase().endsWith(".js") ? Type.JAVASCRIPT : Type.CSS);
+		var ref = builder.ref;
+		if(ref == null && builder.handler.isEmpty()) {
+			throw new IllegalStateException("Must either have a resource reference or a handler.");
+		}
+		this.type = builder.type.orElseGet(()-> getType(ref));
 		this.placement = builder.placement.orElseGet(()-> type.equals(Type.CSS) ? Placement.HEAD : Placement.BODYTAIL);
 		this.requires = Collections.unmodifiableSet(new LinkedHashSet<>(builder.requires));
+		this.handler = builder.handler.orElseGet(() -> UHTTPD.classpathResource(ref.parent(), ref.path()));
 	}
-	
-	public Set<WebModuleHandle> requires() {
+
+	public Set<WebModule> requires() {
 		return requires;
 	}
 
-	public Handler resource() {
-		return UHTTPD.classpathResource(ref.parent(), ref.path());
+	public Handler handler() {
+		return handler;
 	}
 
 	public String uri() {
@@ -138,4 +167,35 @@ public final class WebModule {
 //			}
 //		};
 //	}
+
+	private Type getType(ResourceRef ref) {
+		if(ref == null) {
+			return uri.toLowerCase().endsWith(".js") ? Type.JAVASCRIPT : Type.CSS;
+		}
+		else {
+			return ref.path().toLowerCase().endsWith(".js") ? Type.JAVASCRIPT : Type.CSS;
+		}
+	}
+
+	@Override
+	public String toString() {
+		return "WebModule [uri=" + uri + ", handler=" + handler + ", placement=" + placement + ", type=" + type
+				+ ", requires=" + requires + "]";
+	}
+	
+		
+	@Override
+	public String name() {
+		return uri();
+	}
+		
+	@Override
+	public void dependencies(Consumer<Dependency<WebModule>> dep) {
+		dep.accept(new Dependency<WebModule>(this, this));
+		requires().forEach(mod -> {
+			dep.accept(new Dependency<WebModule>(this, mod));
+		});
+	}
+	
+	
 }

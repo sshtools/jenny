@@ -25,8 +25,8 @@
 		<version>0.0.1-SNAPSHOT</version>
 		<relativePath>../</relativePath>
 	</parent>
-	<name>Jenny - Config</name>
-	<artifactId>jenny-config</artifactId>
+	<name>Jenny - I18N</name>
+	<artifactId>jenny-i18n</artifactId>
 	<dependencies>
 		
 		<!-- Framework Provided -->
@@ -49,11 +49,6 @@
 		</dependency>
 		
 		<!-- Required -->
-		<dependency>
-			<groupId>com.sshtools</groupId>
-			<artifactId>jini</artifactId>
-			<version>0.2.2</version>
-		</dependency>
 		
 	</dependencies>
 </project>

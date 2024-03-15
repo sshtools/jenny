@@ -24,7 +24,8 @@ class JennyIO {
 			switch (msg.type) {
 				case 'reload':
 					console.log('Page reload requested');
-					window.location.reload();
+					window.location.href = window.location.href;
+					//window.location.reload();
 					break;
 				case 'message':
                     if(msg.channel in this.on)

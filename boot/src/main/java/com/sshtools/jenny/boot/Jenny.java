@@ -34,7 +34,7 @@ import com.sshtools.bootlace.api.GAV;
 import com.sshtools.bootlace.api.Repository;
 import com.sshtools.bootlace.api.ResolutionMonitor;
 import com.sshtools.bootlace.platform.Bootlace;
-import com.sshtools.bootlace.platform.DynamicLayer;
+import com.sshtools.bootlace.platform.ExtensionLayerImpl;
 
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarBuilder;
@@ -98,11 +98,11 @@ public class Jenny {
 				style(S.boldOff()).
 				println(terminal);
 		
-		var plugins = jenny.getLayer("plugins");
+		var plugins = jenny.getLayer("extensions");
 		new AttributedStringBuilder().
 				append("\nDrop plugins into ").
 				style(S.bold()).
-				append((((DynamicLayer)plugins).path().toAbsolutePath().toString())).
+				append((((ExtensionLayerImpl)plugins).path().toAbsolutePath().toString())).
 				style(S.boldOff()).
 				println(terminal);
 		

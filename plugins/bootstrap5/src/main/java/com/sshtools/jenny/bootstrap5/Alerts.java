@@ -56,6 +56,7 @@ public final class Alerts extends ArrayList<Alerts.Alert> {
 		}
 		catch(Exception e) {
 			LOG.error("Alertable task failed.", e);
+			e.printStackTrace();;
 			model.include("alerts", () ->
 				Alerts.of(new Builder().fromException(e).
 						withBundle(bundle).

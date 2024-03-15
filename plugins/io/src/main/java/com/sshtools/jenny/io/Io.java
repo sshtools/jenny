@@ -34,11 +34,10 @@ import javax.json.JsonValue;
 import com.sshtools.bootlace.api.Logs;
 import com.sshtools.bootlace.api.Logs.Category;
 import com.sshtools.bootlace.api.Logs.Log;
-import com.sshtools.jenny.web.Web;
-import com.sshtools.jenny.web.WebModule;
-import com.sshtools.jenny.web.WebModule.WebModuleHandle;
 import com.sshtools.bootlace.api.Plugin;
 import com.sshtools.bootlace.api.PluginContext;
+import com.sshtools.jenny.web.Web;
+import com.sshtools.jenny.web.WebModule;
 import com.sshtools.uhttpd.UHTTPD.WebSocket;
 import com.sshtools.uhttpd.UHTTPD.WebSocketBuilder;
 import com.sshtools.uhttpd.UHTTPD.WebSocketHandler;
@@ -119,7 +118,7 @@ public class Io implements Plugin {
 	private final WebSocketHandler io;
 	private Web web;
 	private final Map<SocketChannelKey, IoChannel> channels = new ConcurrentHashMap<>();
-	private WebModuleHandle webModule;
+	private WebModule webModule;
 
 	public Io() {
 		webSockets = new CopyOnWriteArrayList<>();
@@ -164,19 +163,19 @@ public class Io implements Plugin {
 	@Override
 	public void open(PluginContext context) {
 		web = context.plugin(Web.class);
-		webModule = web.module(new WebModule.Builder().
+		webModule = new WebModule.Builder().
 				withResource(Io.class, "io.js").
 				withUri("/io/io.js").
-				build());
+				build();
 		
 		context.autoClose(
-			webModule,
+			web.modules(webModule),
 			web.router().route().
 				webSocket("/io/io", io).build()
 		);
 	}
 
-	public WebModuleHandle webModule() {
+	public WebModule webModule() {
 		return webModule;
 	}
 
@@ -193,11 +192,18 @@ public class Io implements Plugin {
 	public void broadcast(String channel, JsonObject msg) {
 		channels.keySet().stream().
 			filter(k -> k.channel().equals(channel)).
-			forEach(k -> k.socket().send(Json.createObjectBuilder().
-				add("type", "message").
-				add("channel", channel).
-				add("data", msg).
-				build().toString()));
+			forEach(k -> {
+				var jmsg = Json.createObjectBuilder().
+					add("type", "message").
+					add("channel", channel).
+					add("data", msg).
+					build().toString();
+				
+				if(LOG.debug())
+					LOG.debug("Broadcast: {0}", jmsg);
+				
+				k.socket().send(jmsg);
+			});
 	}
 
 	/**

@@ -20,7 +20,7 @@ module com.sshtools.jenny.config {
 	exports com.sshtools.jenny.config;
 	opens com.sshtools.jenny.config;
 	
-	requires transitive com.sshtools.jenny.web;
+	requires transitive com.sshtools.jenny.api;
 	requires transitive com.sshtools.jini;
 	
 	provides Plugin with Config; 

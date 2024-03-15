@@ -14,24 +14,14 @@
  * limitations under the License.
  */
 import com.sshtools.bootlace.api.Plugin;
-import com.sshtools.jenny.web.GlobalTemplateDecorator;
-import com.sshtools.jenny.web.HandlerFactory;
-import com.sshtools.jenny.web.Web;
+import com.sshtools.jenny.i18n.I18N;
 
-module com.sshtools.jenny.web {
-	exports com.sshtools.jenny.web;
-	opens com.sshtools.jenny.web;
+module com.sshtools.jenny.i18n {
+	exports com.sshtools.jenny.i18n;
+	opens com.sshtools.jenny.i18n;
 	
-	requires transitive com.sshtools.bootlace.api;
-	requires transitive com.sshtools.jenny.api;
-	requires transitive com.sshtools.jenny.config;
-	requires transitive com.sshtools.tinytemplate;
-	requires transitive com.sshtools.uhttpd;
-	requires static java.scripting;
 	requires transitive java.json;
+	requires transitive com.sshtools.jenny.web;
 	
-	uses HandlerFactory;
-	uses GlobalTemplateDecorator;
-	
-	provides Plugin with Web;
+	provides Plugin with I18N;
 }

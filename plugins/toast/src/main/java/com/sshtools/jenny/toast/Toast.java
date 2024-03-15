@@ -15,6 +15,7 @@
  */
 package com.sshtools.jenny.toast;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -32,7 +33,7 @@ import com.sshtools.jenny.io.Io.IoChannel;
 import com.sshtools.jenny.web.Web;
 import com.sshtools.jenny.web.WebLog;
 import com.sshtools.jenny.web.WebModule;
-import com.sshtools.jenny.web.WebModule.WebModuleHandle;
+import com.sshtools.jenny.web.WebModule.WebModulesRef;
 import com.sshtools.tinytemplate.Templates.TemplateModel;
 
 public class Toast implements Plugin {
@@ -41,7 +42,8 @@ public class Toast implements Plugin {
 	private Web web;
 	private Io io;
 
-	private WebModuleHandle webModule;
+	private WebModule webModule;
+	private WebModulesRef modules;
 	private final List<Alert> queuedAlerts = new ArrayList<>();
 	
 	@Override
@@ -50,14 +52,12 @@ public class Toast implements Plugin {
 		web = context.plugin(Web.class);
 		io = context.plugin(Io.class);
 		
-		webModule = web.module(new WebModule.Builder().
-				withRequires(io.webModule()).
-				withResource(Toast.class, "toast.frag.js").
-				withUri("/toast.frag.js").
-				build());
-		
 		context.autoClose(
-			webModule,
+				
+			modules = web.modules(webModule = WebModule.of(
+				"/toast.frag.js", Toast.class, "toast.frag.js", io.webModule()
+			)),
+			
 			io.contributor("toast", IoChannel::of)
 		);
 		
@@ -66,23 +66,27 @@ public class Toast implements Plugin {
 		
 	}
 	
-	public WebModuleHandle webModule() {
+	public WebModule webModule() {
 		return webModule;
 	}
 
 	public TemplateModel fragToast() {
 		return web.require(
-				webModule(), 
-				web.template(Toast.class, "toast.frag.html")
+				web.template(Toast.class, "toast.frag.html"), 
+				modules
 		);
 	}
-
+	
 	public void toast(Alert alert) {
+		toast(alert, Duration.ofSeconds(2));
+	}
+
+	public void toast(Alert alert, Duration delay) {
 		if(web == null) {
 			queuedAlerts.add(alert);			
 		}
 		else {
-			web.globalUiQueue().schedule(() -> { 
+			web.globalUiQueue().schedule(() -> 
 				io.broadcast("toast", Json.createObjectBuilder().
 							add("type", "toast").
 							add("subtitle", "").
@@ -91,8 +95,8 @@ public class Toast implements Plugin {
 							add("style", alert.style().name().toLowerCase()).
 							add("description", alert.description().get().orElse("")).
 							add("actions", actions(alert)).
-							build());
-			}, 2, TimeUnit.SECONDS);
+							build())
+			, delay.toMillis(), TimeUnit.MILLISECONDS);
 		}
 		
 	}

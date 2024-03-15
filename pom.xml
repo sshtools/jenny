@@ -32,6 +32,7 @@
         <module>auth</module>
         <module>plugins</module>
         <module>package</module>
+        <module>config</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -105,6 +106,11 @@
                 <version>2.0.9</version>
             </dependency>
             <dependency>
+                <groupId>org.glassfish</groupId>
+                <artifactId>javax.json</artifactId>
+                <version>1.1.4</version>
+            </dependency>
+            <dependency>
                 <groupId>com.sshtools</groupId>
                 <artifactId>bootlace-platform</artifactId>
                 <version>${bootlace.version}</version>
@@ -113,6 +119,16 @@
                 <groupId>com.sshtools</groupId>
                 <artifactId>bootlace-api</artifactId>
                 <version>${bootlace.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sshtools</groupId>
+                <artifactId>uhttpd</artifactId>
+                <version>0.9.8</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sshtools</groupId>
+                <artifactId>tinytemplate</artifactId>
+                <version>1.0.0-SNAPSHOT</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

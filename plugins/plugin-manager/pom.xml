@@ -42,20 +42,24 @@
 			<version>${project.version}</version>
 			<scope>provided</scope> 
 		</dependency>
+        <dependency>
+            <groupId>com.sshtools</groupId>
+            <artifactId>jenny-i18n</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope> 
+        </dependency>
 		<dependency>
 			<groupId>com.sshtools</groupId>
 			<artifactId>bootlace-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		
-		<!-- Required -->
-		<dependency>
-			<groupId>org.glassfish</groupId>
-			<artifactId>javax.json</artifactId>
-			<version>1.1.4</version>
-		</dependency>
         
         <!-- NPM -->
+        <dependency> 
+            <groupId>npm</groupId>
+            <artifactId>bootstrap</artifactId>
+            <version>5.3.3</version>
+        </dependency>
         <dependency> 
             <groupId>npm</groupId>
             <artifactId>bootstrap</artifactId>

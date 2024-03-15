@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 import com.sshtools.bootlace.api.Plugin;
-import com.sshtools.jenny.pluginmanager.PluginManager;
+import com.sshtools.jenny.pluginmanager.ExtensionManager;
 
 module com.sshtools.jenny.pluginmanager {
 	exports com.sshtools.jenny.pluginmanager;
 	opens  com.sshtools.jenny.pluginmanager;
 	
 	requires transitive com.sshtools.jenny.web;
+	requires transitive com.sshtools.jenny.i18n;
 	requires java.json;
 	
-	provides Plugin with PluginManager;
+	provides Plugin with ExtensionManager;
 }

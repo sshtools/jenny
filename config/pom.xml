@@ -21,23 +21,17 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.sshtools</groupId>
-		<artifactId>jenny-plugins</artifactId>
+		<artifactId>jenny</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 		<relativePath>../</relativePath>
 	</parent>
-	<name>Jenny - Bootstrap5</name>
-	<artifactId>jenny-bootstrap5</artifactId>
+	<name>Jenny - Config</name>
+	<artifactId>jenny-config</artifactId>
 	<dependencies>
 		
 		<!-- Framework Provided -->
 		<dependency>
             <groupId>${project.groupId}</groupId>
-			<artifactId>jenny-web</artifactId>
-			<version>${project.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>${project.groupId}</groupId>
 			<artifactId>jenny-api</artifactId>
 			<version>${project.version}</version>
 			<scope>provided</scope> 
@@ -48,36 +42,12 @@
 			<scope>provided</scope>
 		</dependency>
 		
-		<!-- NPM -->
-        <dependency> 
-            <groupId>npm</groupId>
-            <artifactId>bootstrap</artifactId>
-            <version>5.3.3</version>
-        </dependency>
-        <dependency> 
-            <groupId>npm</groupId>
-            <artifactId>bootstrap-table</artifactId>
-            <version>1.22.3</version>
-        </dependency>
-        <dependency> 
-            <groupId>npm</groupId>
-            <artifactId>bootstrap5-autocomplete</artifactId>
-            <version>1.1.22</version>
-        </dependency>
-        <dependency> 
-            <groupId>npm</groupId>
-            <artifactId>bootstrap-icons</artifactId>
-            <version>1.11.0</version>
-        </dependency>
-        <dependency>
-            <groupId>npm</groupId>
-            <artifactId>bootbox</artifactId>
-            <version>6.0.0</version>
-        </dependency>
-        <dependency> 
-            <groupId>npm</groupId>
-            <artifactId>jquery</artifactId>
-            <version>3.7.1</version>
-        </dependency>
+		<!-- Required -->
+		<dependency>
+			<groupId>com.sshtools</groupId>
+			<artifactId>jini</artifactId>
+			<version>0.2.2</version>
+		</dependency>
+		
 	</dependencies>
 </project>

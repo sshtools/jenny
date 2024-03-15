@@ -30,12 +30,12 @@
 	<packaging>pom</packaging>
 	<modules>
 		<module>bootstrap5</module>
+		<module>i18n</module>
 		<module>plugin-manager</module>
 		<module>io</module>
 		<module>bootswatch</module>
 		<module>jobs</module>
 		<module>toast</module>
-		<module>config</module>
 	</modules>
 	<build>
 		<plugins>

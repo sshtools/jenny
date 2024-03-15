@@ -1,0 +1,23 @@
+<div id="dropZone" class="drop-zone h-100" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" ondragleave="dragLeaveHandler(event);">
+<script type="module" src="plugin-installer.frag.js" crossorigin="anonymous"></script>
+<form method="post" enctype="multipart/form-data">
+  <h5>${%fromRepository}</h5>
+  <div class="form-group mt-3">
+    <label for="gav">${%gav}</label>
+    <input name="gav" data-server="plugin-search" data-live-server="true" type="text" class="form-control" id="gav" aria-describedby="gavHelp" placeholder="groupId:artifactId[:version]">
+    <small id="gavHelp" class="form-text text-muted">${%gavHelp}</small>
+  </div>
+  <div class="mt-2">
+    <button name="search" type="submit" class="btn btn-primary">${%install}</button>
+  </div>
+  <h5 class="mt-3">${%fromFile}</h5>
+  <div class="form-group">
+    <label for="file">${file}</label>
+    <input name="file" type="file"html  class="form-control" id="file" aria-describedby="fileHelp" placeholder="${filePlaceholder}">
+    <small id="fileHelp" class="form-text text-muted">${%fileHelp}</small>
+  </div>
+  <div class="mt-2">
+    <button name="upload" type="submit" class="btn btn-primary">${%upload}</button>
+  </div>
+</form>
+</div>

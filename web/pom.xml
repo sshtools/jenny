@@ -43,16 +43,22 @@
         </dependency>
 
         <!-- Required -->
-
         <dependency>
             <groupId>com.sshtools</groupId>
             <artifactId>uhttpd</artifactId>
-            <version>0.9.6-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.sshtools</groupId>
             <artifactId>tinytemplate</artifactId>
-            <version>0.9.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.json</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jenny-config</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
     </dependencies>

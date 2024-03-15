@@ -21,7 +21,6 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import com.sshtools.jenny.web.Route.RouteBuilder;
-import com.sshtools.jenny.web.WebModule.WebModuleHandle;
 import com.sshtools.uhttpd.UHTTPD.AbstractContext;
 import com.sshtools.uhttpd.UHTTPD.AbstractWebContextBuilder;
 import com.sshtools.uhttpd.UHTTPD.Handler;
@@ -37,7 +36,7 @@ public class Router extends AbstractContext {
 	}
 
 	private final Set<Route> routes = new LinkedHashSet<>();
-	private final static ThreadLocal<Set<WebModuleHandle>> requires = new ThreadLocal<>();
+	private final static ThreadLocal<Set<WebModule>> requires = new ThreadLocal<>();
 
 	private Router(RouterBuilder builder) {
 		super(builder);
@@ -47,7 +46,7 @@ public class Router extends AbstractContext {
 		return new RouteBuilder(routes::add, routes::remove);
 	}
 	
-	public static void requires(WebModuleHandle handle) {
+	public static void requires(WebModule handle) {
 		var reqs = requires.get();
 		if(reqs == null) {
 			reqs = new LinkedHashSet<>();
@@ -56,7 +55,7 @@ public class Router extends AbstractContext {
 		reqs.add(handle);
 	}
 	
-	public static Set<WebModuleHandle> requires() {
+	public static Set<WebModule> requires() {
 		var reqs = requires.get();
 		if(reqs == null)
 			return Collections.emptySet();
