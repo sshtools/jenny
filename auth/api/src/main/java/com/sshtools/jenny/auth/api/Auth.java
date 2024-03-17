@@ -43,11 +43,26 @@ public class Auth implements Plugin {
 		public AuthProviderDeniesException(String message) {
 			super(message);
 		}
+	
+	}
+	
+	public enum AuthState {
+		COMPLETE, ALLOW, DENY, ABORT
+	}
+	
+	public record AuthResult(AuthState state, Optional<UserPrincipal> user) {
 		
+		public AuthResult(AuthState state) {
+			this(state, Optional.empty());
+		}
+		
+		public AuthResult(AuthState state, UserPrincipal principal) {
+			this(state, Optional.of(principal));
+		}
 	}
 	
 	public interface PasswordAuthProvider extends WeightedXPoint {
-		Optional<ExtendedUserPrincipal> logon(String username, char[] password);
+		AuthResult logon(String username, char[] password);
 	}
 	
 	public interface ExternalAuthProvider extends WeightedXPoint {
@@ -57,7 +72,7 @@ public class Auth implements Plugin {
 	}
 	
 	public interface DirectAuthProvider extends WeightedXPoint {
-		Optional<UserPrincipal> logon(Map<String, String> parameters);
+		AuthResult logon(Map<String, String> parameters);
 	}
 	
 	public final static class ExternalAuthSession {
@@ -126,13 +141,29 @@ public class Auth implements Plugin {
 	}
 	
 	public Optional<UserPrincipal> direct(Map<String, String> parameters) {
+		var state = AuthState.DENY;
+		UserPrincipal principal = null;
 		for(var prov : api.extensions().points(DirectAuthProvider.class)) {
 			var provInstance = prov.apply(null);
-			var logon = provInstance.logon(parameters);
-			if(logon.isPresent())
-				return logon;
+			var result = provInstance.logon(parameters);
+			switch(result.state) {
+			case ABORT:
+				return Optional.empty();
+			case ALLOW:
+				state = AuthState.ALLOW;
+				principal = result.user().orElseThrow(() -> new IllegalStateException("If authentication provider succeeds, it must return a user."));
+				continue;
+			case DENY:
+				state = AuthState.DENY;
+				continue;
+			case COMPLETE:
+				return Optional.of(result.user().orElseThrow(() -> new IllegalStateException("If authentication provider succeeds, it must return a user.")));
+			}
 		}
-		return Optional.empty();
+		if(state == AuthState.ALLOW)
+			return Optional.of(principal);
+		else
+			return Optional.empty();
 	}
 	
 	public ExternalAuthSession external(Optional<String> username, String returnTo) {
@@ -149,11 +180,29 @@ public class Auth implements Plugin {
 	}
 
 	public UserPrincipal passwordLogon(String username, char[] password) {
+		var state = AuthState.DENY;
+		UserPrincipal principal = null;
 		for(var prov : api.extensions().points(PasswordAuthProvider.class)) {
-			var user = prov.apply(null).logon(username, password);
-			if(user.isPresent())
-				return user.get();
+			var provInstance = prov.apply(null);
+			var result = provInstance.logon(username, password);
+			switch(result.state) {
+			case ABORT:
+				throw new InvalidUsernameOrPasswordException(username);
+			case ALLOW:
+				state = AuthState.ALLOW;
+				principal = result.user().orElseThrow(() -> new IllegalStateException("If authentication provider succeeds, it must return a user."));
+				continue;
+			case DENY:
+				state = AuthState.DENY;
+				continue;
+			case COMPLETE:
+				state = AuthState.ALLOW;
+				return result.user().orElseThrow(() -> new IllegalStateException("If authentication provider succeeds, it must return a user."));
+			}
 		}
-		throw new InvalidUsernameOrPasswordException(username);
+		if(state == AuthState.ALLOW)
+			return principal;
+		else
+			throw new InvalidUsernameOrPasswordException(username);
 	}
 }

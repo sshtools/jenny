@@ -74,7 +74,7 @@ public class Router extends AbstractContext {
 	}
 
 	@Override
-	protected Collection<? extends Handler> handlers() {
+	public Collection<? extends Handler> handlers() {
 		return routes;
 	}
 }

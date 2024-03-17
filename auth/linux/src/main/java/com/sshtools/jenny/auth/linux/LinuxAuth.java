@@ -26,19 +26,21 @@ import org.jvnet.libpam.PAMException;
 import com.sshtools.bootlace.api.Plugin;
 import com.sshtools.bootlace.api.PluginContext;
 import com.sshtools.jenny.api.Api;
-import com.sshtools.jenny.auth.api.ExtendedUserPrincipal;
+import com.sshtools.jenny.auth.api.Auth.AuthResult;
+import com.sshtools.jenny.auth.api.Auth.AuthState;
 import com.sshtools.jenny.auth.api.Auth.PasswordAuthProvider;
+import com.sshtools.jenny.auth.api.ExtendedUserPrincipal;
 
 public class LinuxAuth implements Plugin {
 
 	public final static class Provider implements PasswordAuthProvider {
 		@Override
-		public Optional<ExtendedUserPrincipal> logon(String username, char[] password) {
+		public AuthResult logon(String username, char[] password) {
 			try {
 				var pam = new PAM("Jenny");
 				try {
 					var user = pam.authenticate(username, new String(password));
-					return Optional.of(new ExtendedUserPrincipal.LinuxUser() {
+					return new AuthResult(AuthState.COMPLETE, new ExtendedUserPrincipal.LinuxUser() {
 	
 						@Override
 						public String getName() {
@@ -76,7 +78,7 @@ public class LinuxAuth implements Plugin {
 						}
 					});
 				} catch (PAMException pe) {
-					return Optional.empty();
+					return new AuthResult(AuthState.DENY);
 				} finally {
 					pam.dispose();
 				}
