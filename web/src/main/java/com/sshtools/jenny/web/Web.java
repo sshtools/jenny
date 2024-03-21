@@ -19,7 +19,9 @@ import static com.sshtools.tinytemplate.Templates.TemplateModel.ofContent;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,6 +43,7 @@ import com.sshtools.bootlace.api.Plugin;
 import com.sshtools.bootlace.api.PluginContext;
 import com.sshtools.jenny.api.XPoints;
 import com.sshtools.jenny.config.Config;
+import com.sshtools.jenny.config.Config.Handle;
 import com.sshtools.jenny.web.Router.RouterBuilder;
 import com.sshtools.jenny.web.WebModule.Placement;
 import com.sshtools.jenny.web.WebModule.Type;
@@ -158,6 +161,19 @@ public final class Web implements Plugin {
 			httpd = bldr.build();
 
 			httpd.start();
+			
+			var webConfig = getWebConfig();
+			webConfig.ini().getOr("port-info").ifPresent(pi -> {
+				try(var out = new PrintWriter(Files.newBufferedWriter(Paths.get(pi)), true)) {
+					httpd.httpPort().ifPresent(p -> out.println("http.port=" + p));
+					httpd.httpsPort().ifPresent(p -> out.println("https.port=" + p));
+				}
+				catch(IOException ioe) {
+					throw new UncheckedIOException(ioe);
+				}
+			});
+			httpd.httpPort().ifPresent(p -> LOG.info("Listening on {0} for HTTP", p));
+			httpd.httpsPort().ifPresent(p -> LOG.info("Listening on {0} for HTTPS", p));
 		}
 		catch(IOException e) {
 			throw new UncheckedIOException(e);
@@ -250,8 +266,7 @@ public final class Web implements Plugin {
 	
 
 	private void configureServer(RootContextBuilder bldr) {
-		var config = PluginContext.$().plugin(Config.class);
-		var webConfig = config.config(this, Scope.VENDOR);
+		var webConfig = getWebConfig();
 		
 		var http = webConfig.ini().sectionOr("http");
 		http.ifPresent(cfg -> {
@@ -285,6 +300,12 @@ public final class Web implements Plugin {
 					withFilenameDateFormat(cfg.getOr("date-format", "ddMM")).
 					build());
 		});
+	}
+
+	private Handle getWebConfig() {
+		var config = PluginContext.$().plugin(Config.class);
+		var webConfig = config.config(this, Scope.SYSTEM);
+		return webConfig;
 	}
 	
 	private List<TemplateModel> cssModules(Transaction tx, String content, Placement placement) {

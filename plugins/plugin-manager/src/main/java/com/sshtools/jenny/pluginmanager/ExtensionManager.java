@@ -72,7 +72,7 @@ public class ExtensionManager implements Plugin {
 					handle("/extension-search", this::actionSearch).
 				build());
 		
-		pluginsLayer = (ExtensionLayer)context.layer("extensions").orElseThrow(() -> new IllegalStateException("Could not find plugins layer"));
+		pluginsLayer = (ExtensionLayer)context.layer("extensions").orElseThrow(() -> new IllegalStateException("Could not find extensions layer"));
 	}
 
 	public TemplateModel fragExtensions() {

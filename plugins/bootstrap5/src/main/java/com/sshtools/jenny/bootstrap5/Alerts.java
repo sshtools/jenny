@@ -30,6 +30,7 @@ import com.sshtools.bootlace.api.Logs;
 import com.sshtools.bootlace.api.Logs.Log;
 import com.sshtools.jenny.web.Web;
 import com.sshtools.jenny.web.WebLog;
+import com.sshtools.jenny.web.WebState;
 import com.sshtools.tinytemplate.Templates.TemplateModel;
 
 @SuppressWarnings("serial")
@@ -56,7 +57,6 @@ public final class Alerts extends ArrayList<Alerts.Alert> {
 		}
 		catch(Exception e) {
 			LOG.error("Alertable task failed.", e);
-			e.printStackTrace();;
 			model.include("alerts", () ->
 				Alerts.of(new Builder().fromException(e).
 						withBundle(bundle).
@@ -211,6 +211,20 @@ public final class Alerts extends ArrayList<Alerts.Alert> {
 
 	public final static Alerts of(Alert... alerts) {
 		return of(Arrays.asList(alerts));
+	}
+	
+	public final static Optional<TemplateModel> flashed() {
+			var webState = WebState.get();
+		try {
+			return Optional.ofNullable((TemplateModel)webState.get(Alerts.class.getName()));
+		}
+		finally {
+			webState.env().remove(Alerts.class.getName());
+		}
+	}
+	
+	public final static void flash(TemplateModel model) {
+		WebState.get().set(Alerts.class.getName(), model);
 	}
 
 	public final static TemplateModel danger(Class<?> bundle, String key, Object... args) {

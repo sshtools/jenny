@@ -21,6 +21,14 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface ExtendedUserPrincipal extends UserPrincipal {
+	
+	default String getRealName() {
+		return getName();
+	}
+	
+	default boolean canSignOut() {
+		return true;
+	}
 
 	public interface LinuxUser extends ExtendedUserPrincipal {
 

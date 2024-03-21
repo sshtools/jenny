@@ -123,7 +123,7 @@
             <dependency>
                 <groupId>com.sshtools</groupId>
                 <artifactId>uhttpd</artifactId>
-                <version>0.9.9-SNAPSHOT</version>
+                <version>0.9.9</version>
             </dependency>
             <dependency>
                 <groupId>com.sshtools</groupId>
@@ -133,7 +133,7 @@
         </dependencies>
     </dependencyManagement>
     <repositories>
-        <repository>
+       <repository>
             <id>npm2mvn</id>
             <url>https://npm2mvn.jadaptive.com</url>
         </repository>

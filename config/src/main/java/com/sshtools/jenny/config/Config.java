@@ -70,7 +70,7 @@ public class Config implements Plugin {
 			throw new IllegalStateException("Impossible.");
 		}
 
-		configResolver = ConfigResolver.get(getClass().getModule().getLayer());
+		 configResolver = ConfigResolver.get(Config.class);
 	}
 
 	@Override
