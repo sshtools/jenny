@@ -22,6 +22,7 @@ module com.sshtools.jenny.pluginmanager {
 	
 	requires transitive com.sshtools.jenny.web;
 	requires transitive com.sshtools.jenny.i18n;
+	requires transitive com.sshtools.jenny.bootstrap5;
 	requires java.json;
 	
 	provides Plugin with ExtensionManager;

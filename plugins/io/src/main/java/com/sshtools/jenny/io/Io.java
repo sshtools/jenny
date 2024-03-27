@@ -163,11 +163,7 @@ public class Io implements Plugin {
 	@Override
 	public void open(PluginContext context) {
 		web = context.plugin(Web.class);
-		webModule = new WebModule.Builder().
-				withResource(Io.class, "io.js").
-				withUri("/io/io.js").
-				build();
-		
+		webModule = WebModule.of("/io/io.js", Io.class, "io.js");
 		context.autoClose(
 			web.modules(webModule),
 			web.router().route().

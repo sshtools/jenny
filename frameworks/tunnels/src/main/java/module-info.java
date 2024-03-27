@@ -13,39 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.sshtools.jenny.auth.api;
+import com.sshtools.bootlace.api.Plugin;
+import com.sshtools.jenny.tunnels.Tunnels;
 
-import java.nio.file.Path;
-import java.nio.file.attribute.UserPrincipal;
-import java.util.Optional;
-import java.util.Set;
-
-public interface ExtendedUserPrincipal extends UserPrincipal {
-	
-	default String getRealName() {
-		return getName();
-	}
-	
-	default boolean canSignOut() {
-		return true;
-	}
-	
-	default boolean isVirtual() {
-		return false;
-	}
-
-	public interface LinuxUser extends ExtendedUserPrincipal {
-
-		Optional<String> gecos();
-
-		Optional<String> shell();
-
-		Optional<Path> dir();
-
-		int uid();
-
-		int gid();
-
-		Set<String> groups();
-	}
+module com.sshtools.jenny.tunnels {
+	requires transitive com.sshtools.bootlace.api;
+	exports com.sshtools.jenny.tunnels;
+	provides Plugin with Tunnels;
 }

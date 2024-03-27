@@ -28,6 +28,7 @@ import com.sshtools.bootlace.api.Logs.Log;
 import com.sshtools.bootlace.api.Plugin;
 import com.sshtools.bootlace.api.PluginContext;
 import com.sshtools.jenny.bootstrap5.Alerts.Alert;
+import com.sshtools.jenny.bootstrap5.Bootstrap5;
 import com.sshtools.jenny.io.Io;
 import com.sshtools.jenny.io.Io.IoChannel;
 import com.sshtools.jenny.web.Web;
@@ -55,7 +56,11 @@ public class Toast implements Plugin {
 		context.autoClose(
 				
 			modules = web.modules(webModule = WebModule.of(
-				"/toast.frag.js", Toast.class, "toast.frag.js", io.webModule()
+				"/toast.js", 
+				Toast.class, 
+				"toast.frag.js",
+				Bootstrap5.MODULE_BOOTSTRAP5,
+				io.webModule()
 			)),
 			
 			io.contributor("toast", IoChannel::of)

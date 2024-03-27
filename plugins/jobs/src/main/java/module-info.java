@@ -22,6 +22,7 @@ module com.sshtools.jenny.jobs {
 	
 	requires transitive com.sshtools.jenny.web;
 	requires transitive com.sshtools.jenny.io;
+	requires transitive com.sshtools.jenny.bootstrap5;
 	requires java.json;
 	
 	provides Plugin with Jobs;

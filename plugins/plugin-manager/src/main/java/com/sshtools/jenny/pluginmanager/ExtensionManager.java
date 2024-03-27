@@ -34,6 +34,7 @@ import com.sshtools.bootlace.api.Http;
 import com.sshtools.bootlace.api.Plugin;
 import com.sshtools.bootlace.api.PluginContext;
 import com.sshtools.bootlace.api.PluginLayer;
+import com.sshtools.jenny.bootstrap5.Bootstrap5;
 import com.sshtools.jenny.i18n.I18N;
 import com.sshtools.jenny.web.Web;
 import com.sshtools.jenny.web.WebModule;
@@ -47,7 +48,8 @@ public class ExtensionManager implements Plugin {
 	private Web web;
 	private I18N i18n;
 	private ExtensionLayer pluginsLayer;
-	private WebModulesRef modules;
+	private WebModulesRef maangerModulesRef;
+	private WebModulesRef installModulesRef;
 	
 	@Override
 	public void afterOpen(PluginContext context) {
@@ -55,13 +57,27 @@ public class ExtensionManager implements Plugin {
 		web = context.plugin(Web.class);
 		i18n = context.plugin(I18N.class);
 		
-		var managerI18nModule = WebModule.of("/extension-manager.i18n.js", i18n.i18NScript(ExtensionManager.class), i18n.webModule());
+		var managerI18nModule = WebModule.js("/extension-manager.i18n.js", i18n.i18NScript(ExtensionManager.class), i18n.webModule());
 		
 		context.autoClose(
-			modules = web.modules(
+				
+			maangerModulesRef = web.modules(
 				managerI18nModule,
-				WebModule.of("/extension-manager.js", ExtensionManager.class, "extension-manager.frag.js", i18n.webModule(), managerI18nModule),
-				WebModule.of("/extension-installer.js", ExtensionManager.class, "extension-installer.frag.js", i18n.webModule(), managerI18nModule)
+				WebModule.of(
+						"/extension-manager.js", 
+						ExtensionManager.class, 
+						"extension-manager.frag.js", 
+						Bootstrap5.MODULE_JQUERY, Bootstrap5.MODULE_BOOTSTRAP_TABLE, Bootstrap5.MODULE_BOOTBOX, i18n.webModule(), managerI18nModule
+				)
+			),
+			
+			installModulesRef = web.modules(
+				WebModule.of(
+						"/extension-installer.js", 
+						ExtensionManager.class, 
+						"extension-installer.frag.js", 
+						Bootstrap5.MODULE_JQUERY, Bootstrap5.MODULE_BOOTSTRAP5_AUTOCOMPLETE, i18n.webModule(), managerI18nModule
+				)
 			),
 				
 			web.router().route().
@@ -94,14 +110,14 @@ public class ExtensionManager implements Plugin {
 					TemplateModel.ofContent(content)
 						.variable("id", plugin)
 				).toList()),
-			modules);
+			maangerModulesRef);
 	}
 
 	public TemplateModel fragInstallExtension() {
 		return web.require(
 			web.template(ExtensionManager.class, "extension-installer.frag.html").
 				bundle(ExtensionManager.class), 
-			modules
+			installModulesRef
 		);
 	}
 	

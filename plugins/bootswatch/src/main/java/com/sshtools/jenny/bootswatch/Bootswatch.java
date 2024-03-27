@@ -31,7 +31,9 @@ import com.sshtools.bootlace.api.Plugin;
 import com.sshtools.bootlace.api.PluginContext;
 import com.sshtools.bootlace.api.Zip;
 import com.sshtools.jenny.web.GlobalTemplateDecorator;
+import com.sshtools.jenny.web.NpmWebModule;
 import com.sshtools.jenny.web.Web;
+import com.sshtools.jenny.web.WebModule;
 import com.sshtools.tinytemplate.Templates.TemplateModel;
 import com.sshtools.uhttpd.UHTTPD.Cookie;
 import com.sshtools.uhttpd.UHTTPD.CookieBuilder;
@@ -43,6 +45,12 @@ public class Bootswatch implements Plugin {
 	final static String COOKIE_NAME = "jenny_bootswatch_theme";
 	
 	private final Web web 				= PluginContext.$().plugin(Web.class);
+	
+	public final static WebModule MODULE_BOOTSWATCH =
+		NpmWebModule.of(
+			Bootswatch.class, 
+			GAV.ofSpec("npm:bootswatch")
+		);
 
 	private BootswatchThemeProvider decorator;
 	
@@ -90,7 +98,7 @@ public class Bootswatch implements Plugin {
 					if(selected.equals("default")) {
 						bootstrapArtifact.ifPresent(art -> {
 							model.variable("bootswatch.css", 
-								String.format("/npm2mvn/%s/%s/%s/css",
+								String.format("/npm2mvn/%s/%s/%s/dist/css",
 										art.gav().groupId(),
 										art.gav().artifactId(),
 										art.gav().version()));
@@ -99,7 +107,7 @@ public class Bootswatch implements Plugin {
 					else {
 						bootswatchArtifact.ifPresent(art -> {
 							model.variable("bootswatch.css", 
-									String.format("/npm2mvn/%s/%s/%s/%s",
+									String.format("/npm2mvn/%s/%s/%s/dist/%s",
 											art.gav().groupId(),
 											art.gav().artifactId(),
 											art.gav().version(),

@@ -21,20 +21,23 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.sshtools</groupId>
-		<artifactId>jenny</artifactId>
+		<artifactId>jenny-frameworks</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 		<relativePath>../</relativePath>
 	</parent>
-	<name>Jenny - Frameworks</name>
-	<artifactId>jenny-frameworks</artifactId>
-	<packaging>pom</packaging>
-	<modules>
-		<module>logging</module>
-		<module>events</module>
-		<module>jna</module>
-		<module>dbus</module>
-		<module>tty</module>
-		<module>vfs</module>
-		<module>tunnels</module>
-	</modules>
+	<name>Jenny - Events</name>
+	<artifactId>jenny-events</artifactId>
+	<dependencies>
+
+		<!-- Framework Provided -->
+
+		<dependency>
+			<groupId>com.sshtools</groupId>
+			<artifactId>bootlace-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+
+	</dependencies>
+
 </project>

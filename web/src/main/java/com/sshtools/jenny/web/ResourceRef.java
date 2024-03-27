@@ -15,4 +15,31 @@
  */
 package com.sshtools.jenny.web;
 
-public record ResourceRef(Class<?> parent, String path) { }
+import static com.sshtools.uhttpd.UHTTPD.classpathResource;
+
+import com.sshtools.uhttpd.UHTTPD.Handler;
+
+public record ResourceRef(Class<?> base, ClassLoader loader, String path) {
+	
+	ResourceRef(Class<?> base, String path) {
+		this(base, base.getClassLoader(), path);
+	}
+	
+	ResourceRef(String path) {
+		this(null, null, path);
+	}
+	
+	ResourceRef(ClassLoader loader, String path) {
+		this(null, loader, path);
+	}
+	
+	public Handler handler() {
+		if (base() == null) {
+			if(loader == null)
+				throw new IllegalStateException("Must have a base() or a loader().");
+			return classpathResource(loader(), path());
+		} else {
+			return classpathResource(base(), path());
+		}
+	}
+}

@@ -20,6 +20,10 @@ import static java.lang.String.format;
 import com.sshtools.bootlace.api.LayerContext;
 import com.sshtools.tinytemplate.Templates.TemplateModel;
 
+/**
+ * WIP to replace this architecture with {@link NpmWebModule}. 
+ */
+@Deprecated
 public class NpmPackageGlobalTemplateDecorator implements GlobalTemplateDecorator {
 
 	@Override

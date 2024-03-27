@@ -37,11 +37,7 @@ public class I18N implements Plugin {
 	@Override
 	public void afterOpen(PluginContext context) {
 		web = context.plugin(Web.class);
-		webModule = new WebModule.Builder().
-				withResource(I18N.class, "i18n.js").
-				withUri("/i18n/i18n.js").
-				build();
-		
+		webModule = WebModule.of("/i18n/i18n.js", I18N.class, "i18n.js");
 		context.autoClose(web.modules(webModule));
 	}
 

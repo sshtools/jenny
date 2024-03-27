@@ -17,6 +17,7 @@ package com.sshtools.jenny.web;
 
 import static com.sshtools.tinytemplate.Templates.TemplateModel.ofContent;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -24,6 +25,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -47,6 +49,7 @@ import com.sshtools.jenny.config.Config.Handle;
 import com.sshtools.jenny.web.Router.RouterBuilder;
 import com.sshtools.jenny.web.WebModule.Placement;
 import com.sshtools.jenny.web.WebModule.Type;
+import com.sshtools.jenny.web.WebModule.WebModuleResource;
 import com.sshtools.jenny.web.WebModule.WebModulesRef;
 import com.sshtools.tinytemplate.Templates.Logger;
 import com.sshtools.tinytemplate.Templates.TemplateModel;
@@ -76,6 +79,7 @@ public final class Web implements Plugin {
 	private final Router router;
 	private final ScheduledExecutorService queue;
 	private final Map<String, WebModule> modules = new ConcurrentHashMap<>();
+	private final List<WebModule> globalModules = new ArrayList<WebModule>();
 
 	private com.sshtools.bootlace.api.RootContext rootContext;
 	
@@ -118,6 +122,19 @@ public final class Web implements Plugin {
 		/* Routes */
 		router = new RouterBuilder().
 				build();
+	}
+	
+	public Closeable global(WebModule... modules) {
+		var l = Arrays.asList(modules);
+		globalModules.addAll(l);
+		var c = modules(modules);
+		return new Closeable() {
+			@Override
+			public void close() throws IOException {
+				c.close();;
+				globalModules.removeAll(l);
+			}
+		};
 	}
 	
 	@Override
@@ -251,16 +268,23 @@ public final class Web implements Plugin {
 	}
 
 	private void addModules(ArrayList<Route> l, HashSet<String> m, WebModule... modules) {
+		/* TODO this needs a rewrite. If an extension is removed, that removes the
+		 * routes that are being shared by another extension also using the module,
+		 * the 2nd etension will stop working correctly.  Need to maintain a counter
+		 * of how many uses of a module there are, and only remove them when there are
+		 * zero usages
+		 */
 		for(var module : modules) {
 			if(!this.modules.containsKey(module.name())) {
 				var hndl = router().route().
-					handle(module.uri().replace(".", "\\."), module.handler()).
+					handle(module.pattern(), module.handler()).
 					build();
+				
 				l.add(hndl);
 				this.modules.put(module.name(), module);
 				m.add(module.name());
-				addModules(l, m, module.requires().toArray(new WebModule[0]));
 			}
+			addModules(l, m, module.requires().toArray(new WebModule[0]));
 		}
 	}
 	
@@ -309,10 +333,11 @@ public final class Web implements Plugin {
 	}
 	
 	private List<TemplateModel> cssModules(Transaction tx, String content, Placement placement) {
-		
-		var l = sortModules(Type.CSS, placement);
-		return l.stream().map(mod -> TemplateModel.ofContent(content).
-					variable("href", mod.uri())
+		var l = sortModules(Arrays.asList(Type.CSS), placement);
+		return l.stream().
+			map(mod -> TemplateModel.ofContent(content).
+				variable("href", mod.uri()
+			)
 		).toList();
 	}
 	
@@ -343,22 +368,22 @@ public final class Web implements Plugin {
 	
 	private TemplateModel fragBodyHead(Transaction tx) {
 		return decorate(tx, TemplateModel.ofResource(Web.class, "bodyhead.frag.html").
-				list("javascript", (content) -> 
-					javascriptModules(tx, content, Placement.BODYHEAD)));
+				list("script", (content) -> 
+					scriptModules(tx, content, Placement.BODYHEAD)));
 		}
 
 	private TemplateModel fragBodyTail(Transaction tx) {
 		return decorate(tx, TemplateModel.ofResource(Web.class, "bodytail.frag.html").
-				list("javascript", (content) -> 
-					javascriptModules(tx, content, Placement.BODYTAIL)));
+				list("script", (content) -> 
+					scriptModules(tx, content, Placement.BODYTAIL)));
 	}
 
 	private TemplateModel fragHead(Transaction tx) {
 		var templ = TemplateModel.ofResource(Web.class, "head.frag.html").
 				list("css", (content) -> 
 					cssModules(tx, content, Placement.HEAD)).
-				list("javascript", (content) -> 
-					javascriptModules(tx, content, Placement.HEAD));
+				list("script", (content) -> 
+					scriptModules(tx, content, Placement.HEAD));
 		
 		Optional<String> baseHref = tx.attrOr(TX_BASE_HREF);
 		Optional<String> baseTarget = tx.attrOr(TX_BASE_TARGET);
@@ -373,16 +398,23 @@ public final class Web implements Plugin {
 		return decorate(tx, templ);
 	}
 
-	private List<TemplateModel> javascriptModules(Transaction tx, String content, Placement placement) {
+	private List<TemplateModel> scriptModules(Transaction tx, String content, Placement placement) {
 		
-		var l = sortModules(Type.JAVASCRIPT, placement);
+		var l = sortModules(Arrays.asList(Type.JS, Type.JS_MODULE), placement);
 		
 		return l.stream().
 			map(mod -> TemplateModel.ofContent(content).
+				variable("type", mod.scriptType()).
 				variable("src", mod.uri())
 		).toList();
 	}
 	
+	/**
+	 * To be replaced by {@link NpmWebModule}.
+	 * 
+	 * @param tx
+	 */
+	@Deprecated
 	private void npmResource(Transaction tx) {
 		rootContext.globalResource(tx.match(0)).ifPresent(res -> {
 			try {
@@ -393,16 +425,22 @@ public final class Web implements Plugin {
 		});
 	}
 
-	private Collection<WebModule> sortModules(Type css, Placement placement) {
+	private Collection<WebModuleResource> sortModules(Collection<Type> types, Placement placement) {
 		/* The complete list */
 		List<WebModule> l = new ArrayList<>();
+		l.addAll(globalModules);
 		l.addAll(Router.requires());
 		l.addAll(l.stream().flatMap(r -> r.requires().stream()).toList());
 		
 		/* Topological DAG sort */
 		l =  new DependencyGraph<>(l).getTopologicallySorted();
 		
-		return new LinkedHashSet<>(l.stream().filter(m -> m.placement().equals(placement) && 
-				   m.type().equals(css)).toList().reversed());
+		return new LinkedHashSet<>(l.
+				stream().
+				flatMap(a -> a.resources().stream()).
+				filter(m -> m.placement().equals(placement) && types.contains(m.type())).
+				toList().
+				reversed()
+		);
 	}
 }

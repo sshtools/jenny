@@ -41,6 +41,7 @@ import com.sshtools.bootlace.api.Logs;
 import com.sshtools.bootlace.api.Logs.Log;
 import com.sshtools.bootlace.api.Plugin;
 import com.sshtools.bootlace.api.PluginContext;
+import com.sshtools.jenny.bootstrap5.Bootstrap5;
 import com.sshtools.jenny.io.Io;
 import com.sshtools.jenny.io.Io.Contributor;
 import com.sshtools.jenny.io.Io.IoChannel;
@@ -115,7 +116,7 @@ public class Jobs implements Plugin {
 	private Map<String, Contributor> ioContributors = new ConcurrentHashMap<>();
 	private Map<String, Sender> ioSenders = new ConcurrentHashMap<>();
 	private WebModule jobModule;
-	private WebModulesRef modules;
+	private WebModulesRef modulesRef;
 	
 	@Override
 	public void afterOpen(PluginContext context) {
@@ -123,7 +124,13 @@ public class Jobs implements Plugin {
 		io = context.plugin(Io.class);
 		
 		context.autoClose(
-			modules = web.modules(jobModule = WebModule.of("/job-progress.frag.js", Jobs.class, "job-progress.frag.js", io.webModule())),
+			modulesRef = web.modules(
+				jobModule = WebModule.of(
+					"/job-progress.frag.js", 
+					Jobs.class, 
+					"job-progress.frag.js", 
+					Bootstrap5.MODULE_JQUERY, Bootstrap5.MODULE_BOOTSTRAP5, io.webModule())
+			),
 			web.router().route().
 				handle("/job-cancel", this::actionCancel).
 				build());
@@ -365,7 +372,7 @@ public class Jobs implements Plugin {
 					bundle(Jobs.class);
 			}).toList());
 		
-		web.require(template, modules);
+		web.require(template, modulesRef);
 		
 		return template;
 	}

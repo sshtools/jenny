@@ -16,24 +16,37 @@
 package com.sshtools.jenny.web;
 
 import java.io.Closeable;
+import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import com.sshtools.bootlace.api.DependencyGraph.Dependency;
 import com.sshtools.bootlace.api.NodeModel;
 import com.sshtools.uhttpd.UHTTPD;
 import com.sshtools.uhttpd.UHTTPD.Handler;
+import com.sshtools.uhttpd.UHTTPD.Transaction;
 
+/**
+ * TODO: Detect .min resources and automatically use them (when not specified as 'main' or 'style' or 'module'),
+ * also the reverse.
+ */
 public final class WebModule implements NodeModel<WebModule> {
+	
+	public enum Mount {
+		FILE, DIRECTORY
+	}
 
 	public enum Type {
-		CSS, JAVASCRIPT
+		CSS, JS, JS_MODULE
 	}
 	
 	public enum Placement {
@@ -44,32 +57,251 @@ public final class WebModule implements NodeModel<WebModule> {
 		WebModule[] modules();
 	}
 	
-	public static WebModule of(String uri, Handler handler, WebModule... requires) {
+	public static WebModule css(String uri, Handler handler, WebModule... requires) {
+		return of(uri, handler, Type.CSS, requires);
+	}
+	
+	public static WebModule js(String uri, Handler handler, WebModule... requires) {
+		return of(uri, handler, Type.JS, requires);
+	}
+	
+	public static WebModule jsModule(String uri, Handler handler, WebModule... requires) {
+		return of(uri, handler, Type.JS_MODULE, requires);
+	}
+	
+	public static WebModule of(String uri, Handler handler, Type type, WebModule... requires) {
 		return new Builder().
 				withUri(uri).
-				withHandler(handler).
+				withResources(WebModuleResource.of(uri, handler, type)).
 				withRequires(requires).
 				build();
+	}
+	
+	public static WebModule jsModule(String uri, Class<?> base, String path, WebModule... requires) {
+		return of(uri, base, path, Type.JS_MODULE, requires);
+	}
+	
+	public static WebModule js(String uri, Class<?> base, String path, WebModule... requires) {
+		return of(uri, base, path, Type.JS, requires);
+	}
+	
+	public static WebModule css(String uri, Class<?> base, String path, WebModule... requires) {
+		return of(uri, base, path, Type.CSS, requires);
 	}
 	
 	public static WebModule of(String uri, Class<?> base, String path, WebModule... requires) {
 		return new Builder().
 				withUri(uri).
-				withResource(base, path).
+				withResources(WebModuleResource.of(base, path)).
 				withRequires(requires).
 				build();
 	}
 	
+	public static WebModule of(String uri, Class<?> base, String path, Type type, WebModule... requires) {
+		return new Builder().
+				withUri(uri).
+				withResources(WebModuleResource.of(base, type, path)).
+				withRequires(requires).
+				build();
+	}
+	
+	public final static class WebModuleResource {
+	
+		public final static class Builder {
+			private Optional<Type> type = Optional.empty();
+			private Optional<Placement> placement = Optional.empty();
+			private ResourceRef ref;
+			private Optional<Handler> handler = Optional.empty();
+			
+			public Builder withHandler(Handler handler) {
+				this.handler = Optional.of(handler);
+				return this;
+			}
+			
+			public Builder withType(Type type) {
+				this.type = Optional.of(type);
+				return this;
+			}
+			
+			public Builder withPlacement(Placement placement) {
+				this.placement = Optional.of(placement);
+				return this;
+			}
+			
+			public Builder withResource(Class<?> resourceParent, String resource) {
+				return withResource(new ResourceRef(resourceParent, resource));
+			}
+			
+			public Builder withResource(ClassLoader loader, String resource) {
+				return withResource(new ResourceRef(loader, resource));
+			}
+			
+			public Builder withResource(String resource) {
+				return withResource(new ResourceRef(resource));
+			}
+			
+			public Builder withResource(ResourceRef ref) {
+				this.ref = ref;
+				return this;
+			}
+			
+			public WebModuleResource build() {
+				return new WebModuleResource(this); 
+			}
+		}
+		
+		public static WebModuleResource of(String resource) {
+			return new Builder().withResource(resource).build();
+		}
+		
+		public static WebModuleResource css(String resource) {
+			return new Builder().withResource(resource).withType(Type.CSS).build();
+		}
+		
+		public static WebModuleResource js(String resource) {
+			return new Builder().withResource(resource).withType(Type.JS).build();
+		}
+		
+		public static WebModuleResource jsModule(String resource) {
+			return new Builder().withResource(resource).withType(Type.JS_MODULE).build();
+		}
+		
+		public static WebModuleResource of(Class<?> resourceParent, String resource) {
+			return new Builder().withResource(resourceParent, resource).build();
+		}
+		
+		public static WebModuleResource of(Class<?> resourceParent, Type type, String resource) {
+			return new Builder().withResource(resourceParent, resource).withType(type).build();
+		}
+		
+		public static WebModuleResource css(Class<?> resourceParent, String resource) {
+			return new Builder().withResource(resourceParent, resource).withType(Type.CSS).build();
+		}
+		
+		public static WebModuleResource js(Class<?> resourceParent, String resource) {
+			return new Builder().withResource(resourceParent, resource).withType(Type.JS).build();
+		}
+		
+		public static WebModuleResource jsModule(Class<?> resourceParent, String resource) {
+			return new Builder().withResource(resourceParent, resource).withType(Type.JS_MODULE).build();
+		}
+		
+		public static WebModuleResource of(ResourceRef ref) {
+			return new Builder().withResource(ref).build();
+		}
+		
+		public static WebModuleResource css(ResourceRef ref) {
+			return new Builder().withResource(ref).withType(Type.CSS).build();
+		}
+		
+		public static WebModuleResource js(ResourceRef ref) {
+			return new Builder().withResource(ref).withType(Type.JS).build();
+		}
+		
+		public static WebModuleResource jsModule(ResourceRef ref) {
+			return new Builder().withResource(ref).withType(Type.JS).build();
+		}
+		
+		public static WebModuleResource js(String path, Handler handler) {
+			return of(path, handler, Type.JS);
+		}
+		
+		public static WebModuleResource css(String path, Handler handler) {
+			return of(path, handler, Type.CSS);
+		}
+		
+		public static WebModuleResource jsModule(String path, Handler handler) {
+			return of(path, handler, Type.JS_MODULE);
+		}
+		
+		public static WebModuleResource of(String path, Handler handler, Type type) {
+			return new Builder().
+					withHandler(handler).
+					withResource(new ResourceRef(path)).
+					withType(type).
+					build();
+		}
+		
+		private final Optional<Placement> placement;
+		private final Optional<Type> type;
+		private final ResourceRef ref;		
+		private final Optional<Handler> handler;
+		private WebModule module;
+		
+		private WebModuleResource(Builder builder) {
+			this.ref = builder.ref;
+			if(ref == null && builder.handler.isEmpty()) {
+				throw new IllegalStateException("Must either have a resource reference or a handler.");
+			}
+			this.placement = builder.placement;
+			this.type = builder.type;
+			this.handler = builder.handler;
+		}
+
+		public Placement placement() {
+			return placement.orElseGet(()-> type().equals(Type.CSS) ? Placement.HEAD : Placement.BODYTAIL);
+		}
+
+		public String uri() {
+			if(module ==null)
+				throw new IllegalStateException("Not attached to module.");
+			return module.uri(this);
+		}
+
+		public Type type() {
+			return type.orElseGet(() -> {
+				if (ref == null) {
+					throw new IllegalStateException(MessageFormat.format(
+							"A web module resource backed by a ''{0}'' must have a specific ''{1}''.",
+							Handler.class.getName(), Type.class.getName()));
+				} else {
+					return ref.path().toLowerCase().endsWith(".js") ? Type.JS : Type.CSS;
+				}
+			});
+		}
+
+		public String scriptType() {
+			var type = type();
+			if(type.equals(Type.JS)) {
+				return "text/javascript";
+			}
+			else if(type.equals(Type.JS_MODULE)) {
+				return "module";
+			}
+			else
+				throw new IllegalStateException("Not a script type.");
+		}
+	}
+		
 	public final static class Builder {
 		private String uri;
-		private Optional<Type> type = Optional.empty();
-		private Optional<Placement> placement = Optional.empty();
-		private ResourceRef ref;
+		private Optional<String> name = Optional.empty();
 		private final Set<WebModule> requires = new LinkedHashSet<>();
-		private Optional<Handler> handler = Optional.empty();
+		private List<WebModuleResource> resources = new ArrayList<>();
+		private Optional<Mount> mount = Optional.empty();
+		private Optional<ClassLoader> loader = Optional.empty();
 		
-		public Builder withHandler(Handler handler) {
-			this.handler = Optional.of(handler);
+		public  Builder withName(String name) {
+			this.name = Optional.of(name);
+			return this;
+		}
+		
+		public Builder withResources(WebModuleResource... resources) {
+			this.resources.clear();
+			return addResources(resources);
+		}
+		
+		public Builder withResources(Collection<WebModuleResource> resources) {
+			this.resources.clear();
+			return addResources(resources);
+		}
+		
+		public Builder addResources(WebModuleResource... resources) {
+			return addResources(Arrays.asList(resources));
+		}
+		
+		public Builder addResources(Collection<WebModuleResource> resources) {
+			this.resources.addAll(resources);
 			return this;
 		}
 		
@@ -83,28 +315,30 @@ public final class WebModule implements NodeModel<WebModule> {
 		}
 		
 		public Builder withUri(String uri) {
+			if(uri.endsWith("/"))
+				asDirectory();
 			this.uri = uri;
 			return this;
 		}
 		
-		public Builder withType(Type type) {
-			this.type = Optional.of(type);
+		public Builder withLoader(ClassLoader loader) {
+			this.loader = Optional.of(loader);
 			return this;
 		}
 		
-		public Builder withPlacement(Placement placement) {
-			this.placement = Optional.of(placement);
+		public Builder asFile() {
+			return as(Mount.FILE);
+		}
+		
+		public Builder asDirectory() {
+			return as(Mount.DIRECTORY);
+		}
+		
+		public Builder as(Mount mount) {
+			this.mount = Optional.of(mount);
 			return this;
 		}
 		
-		public Builder withResource(Class<?> resourceParent, String resource) {
-			return withResource(new ResourceRef(resourceParent, resource));
-		}
-		
-		public Builder withResource(ResourceRef ref) {
-			this.ref = ref;
-			return this;
-		}
 		
 		public WebModule build() {
 			return new WebModule(this); 
@@ -112,81 +346,156 @@ public final class WebModule implements NodeModel<WebModule> {
 		
 	}
 	
-	private final String uri;
-	private final Handler handler;
-	private final Placement placement;
-	private final Type type;
+	private final static char[] ESC_CHARS = { '\\', '*', '+', '?', '[', '{', '.', '(', ')', '^', '$', '|' };
+	
+	private static String escapeLiteral(String path) {
+		for(var c : ESC_CHARS) {
+			path = path.replace(String.valueOf(c), "\\" + c);
+		}
+		return path;
+	}
+
+	private final String pattern;
+	private final List<WebModuleResource> resources;
 	private final Set<WebModule> requires;
+	private final String name;
+	private final Handler handler;
+	private final Mount mount;
+	private final String uri;
+	private Optional<ClassLoader> loader;
 	
 	private WebModule(Builder builder) {
-		this.uri = Objects.requireNonNull(builder.uri);
-		var ref = builder.ref;
-		if(ref == null && builder.handler.isEmpty()) {
-			throw new IllegalStateException("Must either have a resource reference or a handler.");
+		this.resources = Collections.unmodifiableList(new ArrayList<>(builder.resources));
+		this.resources.forEach(r -> r.module = this);
+		
+		this.mount = builder.mount.orElseGet(() -> builder.uri.endsWith("/") ? Mount.DIRECTORY : Mount.FILE);
+		
+		if(mount == Mount.FILE && resources.size() != 1) {
+			throw new IllegalStateException(MessageFormat.format("Mount ''{0}'' must specify exactly on resource to map to, there are {1}", Mount.FILE, resources.size()));
 		}
-		this.type = builder.type.orElseGet(()-> getType(ref));
-		this.placement = builder.placement.orElseGet(()-> type.equals(Type.CSS) ? Placement.HEAD : Placement.BODYTAIL);
+		
+		var uri = builder.uri;
+		if(!uri.startsWith("/")) {
+			uri = "/" + uri;
+		}
+		
+		if(mount == Mount.DIRECTORY) {
+			if(!uri.endsWith("/")) {
+				uri += "/";
+			}
+		}
+		else {
+			/* TODO map to .min.js/.min.css or .js/.css depending on compression setting */
+			//	var firstRes = resources.get(0);
+		}
+		
+		var pattern = escapeLiteral(Objects.requireNonNull(uri));
+		if(mount == Mount.DIRECTORY) {
+			pattern += "(.*)";
+		}
+		
+		this.pattern = pattern;
+		this.uri = uri;
+		this.name = builder.name.orElse(this.pattern);
 		this.requires = Collections.unmodifiableSet(new LinkedHashSet<>(builder.requires));
-		this.handler = builder.handler.orElseGet(() -> UHTTPD.classpathResource(ref.parent(), ref.path()));
+		this.loader = builder.loader;
+		
+		if(mount == Mount.DIRECTORY) {
+			if(this.loader.isPresent()) {
+				/**
+				 * Web module groups any arbitrary resource on the classpath
+				 * under the URI
+				 */
+				var loader = this.loader.get();
+				handler = new Handler() {
+					
+					@Override
+					public void get(Transaction req) throws Exception {
+						var rel = req.match(0);
+						var fullPath = WebModule.this.uri.substring(1) + "/" + rel;
+						UHTTPD.classpathResource(loader, fullPath).get(req);
+					}
+				};
+			}
+			else {
+				/* Web module groups a list a WebModuleResource under one
+				 * URI and uses the path of each resource to identify the
+				 * resource
+				 */
+				handler = new Handler() {
+					@Override
+					public void get(Transaction req) throws Exception {
+						var rel = req.match(0);
+						for(var resource : resources) {
+							if(resource.ref != null) {
+								
+								if(rel.equals(resource.ref.path())) {
+									if(resource.handler.isPresent()) {
+										resource.handler.get().get(req);
+									}
+									else {
+										resource.ref.handler().get(req);
+									}
+									return;
+								}
+							}
+						}
+					}
+				};
+			}
+		}
+		else {
+			/**
+			 * Web module is a single mapping from a uri to a WebModuleResource
+			 */
+			var res = resources.get(0);
+			if(res.handler.isPresent()) {
+				this.handler = res.handler.get();
+			}
+			else {
+				this.handler = res.ref.handler();
+			}
+		}
+	}
+	
+	private String uri(WebModuleResource webModuleResource) {
+		if(mount == Mount.FILE) {
+			return uri;
+		}
+		else {
+			if(this.loader.isPresent()) {
+				if(webModuleResource.ref.loader() == null && webModuleResource.ref.base() == null) {
+					return uri + webModuleResource.ref.path();
+				}
+				else {
+					return "/" + webModuleResource.ref.path();
+				}
+			}
+			else {				
+				return uri + webModuleResource.ref.path();
+			}
+		}
 	}
 
 	public Set<WebModule> requires() {
 		return requires;
 	}
-
+	
 	public Handler handler() {
 		return handler;
 	}
 
-	public String uri() {
-		return uri;
+	public List<WebModuleResource> resources() {
+		return resources;
 	}
 
-	public Placement placement() {
-		return placement;
+	public String pattern() {
+		return pattern;
 	}
-
-	public Type type() {
-		return type;
-	}
-
-//	String uri();
-//
-//	Type type();
-//
-//	public static WebModule of(String uri, Type type) {
-//		return new WebModule() {
-//			@Override
-//			public String uri() {
-//				return uri;
-//			}
-//
-//			@Override
-//			public Type type() {
-//				return type;
-//			}
-//		};
-//	}
-
-	private Type getType(ResourceRef ref) {
-		if(ref == null) {
-			return uri.toLowerCase().endsWith(".js") ? Type.JAVASCRIPT : Type.CSS;
-		}
-		else {
-			return ref.path().toLowerCase().endsWith(".js") ? Type.JAVASCRIPT : Type.CSS;
-		}
-	}
-
-	@Override
-	public String toString() {
-		return "WebModule [uri=" + uri + ", handler=" + handler + ", placement=" + placement + ", type=" + type
-				+ ", requires=" + requires + "]";
-	}
-	
 		
 	@Override
 	public String name() {
-		return uri();
+		return name;
 	}
 		
 	@Override
@@ -195,6 +504,12 @@ public final class WebModule implements NodeModel<WebModule> {
 		requires().forEach(mod -> {
 			dep.accept(new Dependency<WebModule>(this, mod));
 		});
+	}
+
+	@Override
+	public String toString() {
+		return "WebModule [pattern=" + pattern + ", resources=" + resources + ", requires=" + requires + ", name="
+				+ name + ", handler=" + handler + ", mount=" + mount + ", uri=" + uri + ", loader=" + loader + "]";
 	}
 	
 	
