@@ -47,6 +47,17 @@
 			<artifactId>bootlace-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
+        <dependency>
+            <groupId>com.sshtools</groupId>
+            <artifactId>tinytemplate-bootstrap-forms</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.sshtools</groupId>
+                    <artifactId>tinytemplate</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 		
 		<!-- NPM -->
         <dependency> 

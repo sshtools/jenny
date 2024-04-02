@@ -45,6 +45,8 @@ public class Bootstrap5 implements Plugin {
 		);
 	
 	public final static WebModule MODULE_BOOTSTRAP_TABLE = new NpmWebModule.Builder().
+		withMain("dist/bootstrap-table.min.js").
+		withType("").
 		withGAV(ofSpec("npm:bootstrap-table")).
 		withClass(Bootstrap5.class).
 		withRequires(MODULE_BOOTSTRAP5).
