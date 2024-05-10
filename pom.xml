@@ -123,7 +123,7 @@
             <dependency>
                 <groupId>com.sshtools</groupId>
                 <artifactId>uhttpd</artifactId>
-                <version>0.9.9</version>
+                <version>0.9.10-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>com.sshtools</groupId>
