@@ -35,6 +35,12 @@
 			<artifactId>jenny-api</artifactId>
 			<version>${project.version}</version>
 			<scope>provided</scope> 
+		</dependency> 
+		<dependency>
+            <groupId>${project.groupId}</groupId>
+			<artifactId>jenny-product</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope> 
 		</dependency>
 		<dependency>
 			<groupId>com.sshtools</groupId>
@@ -45,8 +51,8 @@
 		<!-- Required -->
 		<dependency>
 			<groupId>com.sshtools</groupId>
-			<artifactId>jini</artifactId>
-			<version>0.2.2</version>
+            <artifactId>jini-config</artifactId>
+            <version>0.3.3-SNAPSHOT</version>
 		</dependency>
 		
 	</dependencies>

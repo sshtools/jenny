@@ -3,20 +3,25 @@
 <div id="jobCategory" class="container-fluid" data-job-category="${jobs.category}">
 	<t:list jobs>
 		<div  data-job-uuid="${job.uuid}">
-			<div class="row mb-2">
-				<small class="job-title text-muted">${job.title}</small>
+			<div class="row">
+				<span class="job-title text-muted">${job.title}</span>
 			</div>
 			<div class="row">
 				<div class="col-10">
-					<div style="height: 2rem;" class="progress" role="progressbar" aria-label="${job.text}" aria-valuenow="${job.percent}" aria-valuemin="0"
+					<div style="height: 2rem;" class="progress" role="progressbar" aria-valuenow="${job.percent}" aria-valuemin="0"
 						aria-valuemax="100">
-						<div class="progress-bar" style="width: ${job.percent}%">${job.text}</div>
+						<div class="progress-bar" style="width: ${job.percent}%"></div>
 					</div>
 				</div>
 				<div class="col-2 text-center">
 					<a href="/job-cancel?returnTo=${tx.path}&uuid=${job.uuid}" class="btn btn-danger d-inline align-top">
 						<i class="d-md-none bi-x-circle-fill"></i>
 						<span class="d-none d-md-inline">${%cancel}</span></a>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-12"> 
+					<small class="progress-text col-12 text-muted text-nowrap text-break overflow-hidden">${job.text}</small>
 				</div>
 			</div>
 		</div>

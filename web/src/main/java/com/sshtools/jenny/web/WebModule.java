@@ -42,11 +42,11 @@ import com.sshtools.uhttpd.UHTTPD.Transaction;
 public final class WebModule implements NodeModel<WebModule> {
 	
 	public enum Mount {
-		FILE, DIRECTORY
+		FILE, DIRECTORY, CONTENT
 	}
 
 	public enum Type {
-		CSS, JS, JS_MODULE
+		IMPORT_MAP, CSS, JS, MODULE, IMPORTED
 	}
 	
 	public enum Placement {
@@ -66,7 +66,7 @@ public final class WebModule implements NodeModel<WebModule> {
 	}
 	
 	public static WebModule jsModule(String uri, Handler handler, WebModule... requires) {
-		return of(uri, handler, Type.JS_MODULE, requires);
+		return of(uri, handler, Type.MODULE, requires);
 	}
 	
 	public static WebModule of(String uri, Handler handler, Type type, WebModule... requires) {
@@ -78,7 +78,7 @@ public final class WebModule implements NodeModel<WebModule> {
 	}
 	
 	public static WebModule jsModule(String uri, Class<?> base, String path, WebModule... requires) {
-		return of(uri, base, path, Type.JS_MODULE, requires);
+		return of(uri, base, path, Type.MODULE, requires);
 	}
 	
 	public static WebModule js(String uri, Class<?> base, String path, WebModule... requires) {
@@ -112,6 +112,7 @@ public final class WebModule implements NodeModel<WebModule> {
 			private Optional<Placement> placement = Optional.empty();
 			private ResourceRef ref;
 			private Optional<Handler> handler = Optional.empty();
+			private Optional<String> content = Optional.empty();
 			
 			public Builder withHandler(Handler handler) {
 				this.handler = Optional.of(handler);
@@ -125,6 +126,11 @@ public final class WebModule implements NodeModel<WebModule> {
 			
 			public Builder withPlacement(Placement placement) {
 				this.placement = Optional.of(placement);
+				return this;
+			}
+			
+			public Builder withContent(String content) {
+				this.content = Optional.of(content);
 				return this;
 			}
 			
@@ -163,7 +169,7 @@ public final class WebModule implements NodeModel<WebModule> {
 		}
 		
 		public static WebModuleResource jsModule(String resource) {
-			return new Builder().withResource(resource).withType(Type.JS_MODULE).build();
+			return new Builder().withResource(resource).withType(Type.MODULE).build();
 		}
 		
 		public static WebModuleResource of(Class<?> resourceParent, String resource) {
@@ -183,7 +189,7 @@ public final class WebModule implements NodeModel<WebModule> {
 		}
 		
 		public static WebModuleResource jsModule(Class<?> resourceParent, String resource) {
-			return new Builder().withResource(resourceParent, resource).withType(Type.JS_MODULE).build();
+			return new Builder().withResource(resourceParent, resource).withType(Type.MODULE).build();
 		}
 		
 		public static WebModuleResource of(ResourceRef ref) {
@@ -211,7 +217,7 @@ public final class WebModule implements NodeModel<WebModule> {
 		}
 		
 		public static WebModuleResource jsModule(String path, Handler handler) {
-			return of(path, handler, Type.JS_MODULE);
+			return of(path, handler, Type.MODULE);
 		}
 		
 		public static WebModuleResource of(String path, Handler handler, Type type) {
@@ -226,16 +232,26 @@ public final class WebModule implements NodeModel<WebModule> {
 		private final Optional<Type> type;
 		private final ResourceRef ref;		
 		private final Optional<Handler> handler;
+		private final Optional<String> content;
 		private WebModule module;
 		
 		private WebModuleResource(Builder builder) {
 			this.ref = builder.ref;
-			if(ref == null && builder.handler.isEmpty()) {
-				throw new IllegalStateException("Must either have a resource reference or a handler.");
+			if(ref == null && builder.handler.isEmpty() && builder.content.isEmpty()) {
+				throw new IllegalStateException("Must either have a resource reference, content or a handler.");
 			}
 			this.placement = builder.placement;
 			this.type = builder.type;
 			this.handler = builder.handler;
+			this.content = builder.content;
+		}
+		
+		public String content() {
+			return content.get();
+		}
+		
+		public Optional<String> contentOr() {
+			return content;
 		}
 
 		public Placement placement() {
@@ -265,8 +281,11 @@ public final class WebModule implements NodeModel<WebModule> {
 			if(type.equals(Type.JS)) {
 				return "text/javascript";
 			}
-			else if(type.equals(Type.JS_MODULE)) {
+			else if(type.equals(Type.MODULE)) {
 				return "module";
+			}
+			else if(type.equals(Type.IMPORT_MAP)) {
+				return "importmap";
 			}
 			else
 				throw new IllegalStateException("Not a script type.");
@@ -368,14 +387,14 @@ public final class WebModule implements NodeModel<WebModule> {
 		this.resources = Collections.unmodifiableList(new ArrayList<>(builder.resources));
 		this.resources.forEach(r -> r.module = this);
 		
-		this.mount = builder.mount.orElseGet(() -> builder.uri.endsWith("/") ? Mount.DIRECTORY : Mount.FILE);
+		this.mount = builder.mount.orElseGet(() -> builder.uri == null ? Mount.CONTENT : builder.uri.endsWith("/") ? Mount.DIRECTORY : Mount.FILE);
 		
 		if(mount == Mount.FILE && resources.size() != 1) {
 			throw new IllegalStateException(MessageFormat.format("Mount ''{0}'' must specify exactly on resource to map to, there are {1}", Mount.FILE, resources.size()));
 		}
 		
 		var uri = builder.uri;
-		if(!uri.startsWith("/")) {
+		if(uri != null && !uri.startsWith("/")) {
 			uri = "/" + uri;
 		}
 		
@@ -389,7 +408,7 @@ public final class WebModule implements NodeModel<WebModule> {
 			//	var firstRes = resources.get(0);
 		}
 		
-		var pattern = escapeLiteral(Objects.requireNonNull(uri));
+		var pattern = uri == null ? null : escapeLiteral(Objects.requireNonNull(uri));
 		if(mount == Mount.DIRECTORY) {
 			pattern += "(.*)";
 		}
@@ -443,6 +462,9 @@ public final class WebModule implements NodeModel<WebModule> {
 					}
 				};
 			}
+		}
+		else if(mount == Mount.CONTENT) {
+			this.handler = (c) -> {};
 		}
 		else {
 			/**

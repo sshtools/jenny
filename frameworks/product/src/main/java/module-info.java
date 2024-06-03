@@ -13,15 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import com.sshtools.bootlace.api.Plugin;
-import com.sshtools.jenny.bootstrap5.Bootstrap5;
 
-module com.sshtools.jenny.bootstrap5 {
-	exports com.sshtools.jenny.bootstrap5;
-	opens  com.sshtools.jenny.bootstrap5;
+module com.sshtools.jenny.product {
+	exports com.sshtools.jenny.product;
+	opens com.sshtools.jenny.product;
 	
-	requires transitive com.sshtools.jenny.web;
-	requires transitive com.sshtools.tinytemplate.bootstrap.forms;
+	requires transitive com.sshtools.jenny.api;
 	
-	provides Plugin with Bootstrap5;
 }

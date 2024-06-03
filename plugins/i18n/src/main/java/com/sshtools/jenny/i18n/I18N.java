@@ -15,6 +15,8 @@
  */
 package com.sshtools.jenny.i18n;
 
+import java.util.UUID;
+
 import javax.json.Json;
 
 import com.sshtools.bootlace.api.Logs;
@@ -33,6 +35,8 @@ public class I18N implements Plugin {
 
 	private Web web;
 	private WebModule webModule;
+	
+	final static String RNDTKN = UUID.randomUUID().toString().replace("-", "");
 
 	@Override
 	public void afterOpen(PluginContext context) {
@@ -55,7 +59,7 @@ public class I18N implements Plugin {
 			buf.append("if(typeof i18n === 'undefined') { alert('I18N Javascript support not loaded.'); } else { i18n.bundles['");
 			buf.append(bundle.getSimpleName());
 			buf.append("'] = JSON.parse('");
-			buf.append(arrBldr.build().toString().replace("'", "\\'"));
+			buf.append(arrBldr.build().toString().replace("\\\"", RNDTKN).replace("\"", "\\\""));
 			buf.append("'); }");
 			
 			tx.response("text/javascript", buf);

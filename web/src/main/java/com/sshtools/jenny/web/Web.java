@@ -37,6 +37,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
+
 import com.sshtools.bootlace.api.ConfigResolver.Scope;
 import com.sshtools.bootlace.api.DependencyGraph;
 import com.sshtools.bootlace.api.Logs;
@@ -294,14 +297,14 @@ public final class Web implements Plugin {
 		
 		var http = webConfig.ini().sectionOr("http");
 		http.ifPresent(cfg -> {
-			bldr.withHttp(cfg.getIntOr("port", 8080));
-			bldr.withHttpAddress(cfg.getOr("address", "::"));
+			bldr.withHttp(cfg.getInt("port", 8080));
+			bldr.withHttpAddress(cfg.get("address", "::"));
 		});
 		
 		var https = webConfig.ini().sectionOr("https");
 		https.ifPresent(cfg -> {
-			bldr.withHttps(cfg.getIntOr("port", 8443));
-			bldr.withHttpsAddress(cfg.getOr("address", "::"));
+			bldr.withHttps(cfg.getInt("port", 8443));
+			bldr.withHttpsAddress(cfg.get("address", "::"));
 			cfg.getOr("key-password").ifPresent(kp -> bldr.withKeyPassword(kp.toCharArray()));
 			cfg.getOr("keystore-file").ifPresent(ks -> bldr.withKeyStoreFile(Paths.get(ks)));
 			cfg.getOr("keystore-password").ifPresent(kp -> bldr.withKeyPassword(kp.toCharArray()));
@@ -309,19 +312,19 @@ public final class Web implements Plugin {
 		});
 		
 		webConfig.ini().sectionOr("tuning").ifPresent(cfg -> {
-			if(!cfg.getBooleanOr("compression", true)) {
+			if(!cfg.getBoolean("compression", true)) {
 				bldr.withoutCompression();
 			}
 		});
 		
 		webConfig.ini().sectionOr("ncsa").ifPresent(cfg -> {
 			bldr.withLogger(new NCSALoggerBuilder().
-					withAppend(cfg.getBooleanOr("append", true)).
-					withDirectory(Paths.get(cfg.getOr("directory", System.getProperty("user.dir") + File.separator + "logs"))).
-					withExtended(cfg.getBooleanOr("extended", true)).
-					withServerName(cfg.getBooleanOr("server-name", false)).
-					withFilenamePattern(cfg.getOr("pattern", "access_log_%d.log")).
-					withFilenameDateFormat(cfg.getOr("date-format", "ddMM")).
+					withAppend(cfg.getBoolean("append", true)).
+					withDirectory(Paths.get(cfg.get("directory", System.getProperty("user.dir") + File.separator + "logs"))).
+					withExtended(cfg.getBoolean("extended", true)).
+					withServerName(cfg.getBoolean("server-name", false)).
+					withFilenamePattern(cfg.get("pattern", "access_log_%d.log")).
+					withFilenameDateFormat(cfg.get("date-format", "ddMM")).
 					build());
 		});
 	}
@@ -400,12 +403,22 @@ public final class Web implements Plugin {
 
 	private List<TemplateModel> scriptModules(Transaction tx, String content, Placement placement) {
 		
-		var l = sortModules(Arrays.asList(Type.JS, Type.JS_MODULE), placement);
+		var l = sortModules(Arrays.asList(Type.IMPORT_MAP, Type.IMPORTED, Type.JS, Type.MODULE), placement);
 		
 		return l.stream().
-			map(mod -> TemplateModel.ofContent(content).
-				variable("type", mod.scriptType()).
-				variable("src", mod.uri())
+			map(mod -> { 
+				var mdl = TemplateModel.ofContent(content).
+							variable("type", mod.scriptType());
+				
+				if(mod.contentOr().isPresent()) {
+					mdl.variable("content", mod.content());
+				}
+				else {
+					mdl.variable("src", mod.uri());
+				}
+				
+				return mdl;
+			}
 		).toList();
 	}
 	
@@ -435,12 +448,41 @@ public final class Web implements Plugin {
 		/* Topological DAG sort */
 		l =  new DependencyGraph<>(l).getTopologicallySorted();
 		
+		/* Build IMPORT_MAP if there are IMPORTED modules */
+		l = buildImportMap(l);
+		
 		return new LinkedHashSet<>(l.
 				stream().
 				flatMap(a -> a.resources().stream()).
-				filter(m -> m.placement().equals(placement) && types.contains(m.type())).
+				filter(m -> m.type() != Type.IMPORTED && m.placement().equals(placement) && types.contains(m.type())).
 				toList().
 				reversed()
 		);
+	}
+
+	private List<WebModule> buildImportMap(List<WebModule> wms) {
+		var l = new ArrayList<WebModule>(wms);
+		JsonObjectBuilder imports = null;
+		for(var wm : wms) {
+			for(var res : wm.resources()) {
+				if(res.type() == Type.IMPORTED) {
+					if(imports == null) {
+						imports = Json.createObjectBuilder();
+					}
+					imports.add(wm.name(), res.uri());
+				}
+			}
+		}
+		if(imports != null) {
+			l.add(new WebModule.Builder().
+				withResources(new WebModuleResource.Builder().
+						withType(Type.IMPORT_MAP).
+						withContent(Json.createObjectBuilder().
+								add("imports", imports.build()).
+								build().toString()).
+						build()).
+				build());
+		}
+		return l;
 	}
 }

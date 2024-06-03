@@ -21,6 +21,8 @@ import static com.sshtools.jenny.web.NpmWebModule.of;
 import com.sshtools.bootlace.api.Plugin;
 import com.sshtools.jenny.web.NpmWebModule;
 import com.sshtools.jenny.web.WebModule;
+import com.sshtools.jenny.web.WebModule.Type;
+import com.sshtools.tinytemplate.bootstrap.forms.Form;
 
 public class Bootstrap5 implements Plugin {
 	
@@ -33,6 +35,7 @@ public class Bootstrap5 implements Plugin {
 	public final static WebModule MODULE_BOOTSTRAP5 = new NpmWebModule.Builder().
 		withGAV(ofSpec("npm:bootstrap")).
 		withClass(Bootstrap5.class).
+		withType(Type.JS).
 		withMain("dist/js/bootstrap.bundle.min.js").
 		withRequires(MODULE_JQUERY).
 		build();
@@ -46,7 +49,7 @@ public class Bootstrap5 implements Plugin {
 	
 	public final static WebModule MODULE_BOOTSTRAP_TABLE = new NpmWebModule.Builder().
 		withMain("dist/bootstrap-table.min.js").
-		withType("").
+		withType(Type.JS).
 		withGAV(ofSpec("npm:bootstrap-table")).
 		withClass(Bootstrap5.class).
 		withRequires(MODULE_BOOTSTRAP5).
@@ -66,5 +69,10 @@ public class Bootstrap5 implements Plugin {
 			MODULE_BOOTSTRAP5
 		);
 
-	
+	public final static WebModule MODULE_TTBS = WebModule.of(
+			"/ttbs.js", 
+			Form.class, 
+			"ttbs.js",
+			Bootstrap5.MODULE_BOOTSTRAP5
+		);
 }

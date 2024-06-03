@@ -14,8 +14,10 @@ io.onReady(function(io)  {
 			bar.find('.job-title').html(msg.title);
 			
 			var br = $(bar.find('.progress-bar'));
-			br.html(msg.text);
 			br.css('width', msg.percent + '%');
+			
+			var tx = $(bar.find('.progress-text'));
+			tx.html(msg.text);
 		}
 		else if (msg.type === 'complete') {
 			window.location.reload();

@@ -44,6 +44,8 @@ import com.sshtools.uhttpd.UHTTPD.WebSocketHandler;
 
 public class Io implements Plugin {
 	final static Log LOG = Logs.of(Category.ofName(Io.class));
+	
+	public final static WebModule MODULE_IO = WebModule.of("/io/io.js", Io.class, "io.js");
 
 	private record SocketChannelKey(WebSocket socket, String channel) {
 	}
@@ -118,7 +120,6 @@ public class Io implements Plugin {
 	private final WebSocketHandler io;
 	private Web web;
 	private final Map<SocketChannelKey, IoChannel> channels = new ConcurrentHashMap<>();
-	private WebModule webModule;
 
 	public Io() {
 		webSockets = new CopyOnWriteArrayList<>();
@@ -163,16 +164,15 @@ public class Io implements Plugin {
 	@Override
 	public void open(PluginContext context) {
 		web = context.plugin(Web.class);
-		webModule = WebModule.of("/io/io.js", Io.class, "io.js");
 		context.autoClose(
-			web.modules(webModule),
+			web.modules(MODULE_IO),
 			web.router().route().
 				webSocket("/io/io", io).build()
 		);
 	}
 
 	public WebModule webModule() {
-		return webModule;
+		return MODULE_IO;
 	}
 
 	/**

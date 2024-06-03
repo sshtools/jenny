@@ -21,7 +21,10 @@ module com.sshtools.jenny.config {
 	opens com.sshtools.jenny.config;
 	
 	requires transitive com.sshtools.jenny.api;
+	requires transitive com.sshtools.jenny.product;
 	requires transitive com.sshtools.jini;
+	requires transitive com.sshtools.jini.schema;
+	requires transitive com.sshtools.jini.config;
 	
 	provides Plugin with Config; 
 }

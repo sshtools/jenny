@@ -61,13 +61,14 @@ public class Jobs implements Plugin {
 	final static Log LOG = Logs.of(WebLog.JOBS);
 	
 	
-	public record JobOptions<RESULT>(Queue queue, Optional<ResourceBundle> bundle, Job<RESULT> job, Optional<String> category) {}
+	public record JobOptions<RESULT>(Queue queue, Optional<ResourceBundle> bundle, Job<RESULT> job, Optional<String> category, boolean exclusive) {}
 	
 	public final static class JobBuilder<RESULT> {
 		private Queue queue = StandardQueues.GENERIC;
 		private Optional<ResourceBundle> bundle = Optional.empty();
 		private final Job<RESULT> job;
 		private Optional<String> category = Optional.empty();
+		private boolean exclusive = true;
 		
 		public JobBuilder(Job<RESULT> job) {
 			this.job = job;
@@ -88,6 +89,15 @@ public class Jobs implements Plugin {
 			return this;
 		}
 		
+		public JobBuilder<RESULT> withoutExclusive() {
+			return withExclusive(false);
+		}
+		
+		public JobBuilder<RESULT> withExclusive(boolean exclusive) {
+			this.exclusive = exclusive;
+			return this;
+		}
+		
 		public JobBuilder<RESULT> withQueue(Queue queue) {
 			this.queue = queue;
 			return this;
@@ -103,7 +113,7 @@ public class Jobs implements Plugin {
 		}
 		
 		public JobOptions<RESULT> build() {
-			return new JobOptions<>(queue, bundle, job, category);
+			return new JobOptions<>(queue, bundle, job, category, exclusive);
 		}
 		
 	}
@@ -170,7 +180,7 @@ public class Jobs implements Plugin {
 		var q = options.queue;
 		var job = options.job;
 		
-		if(jobs.containsKey(jobCategory))
+		if(jobs.containsKey(jobCategory) && options.exclusive)
 			throw new IllegalStateException(MessageFormat.format("Job with ID {0}", jobCategory));
 		ScheduledExecutorService queue;
 		synchronized(queues) {
@@ -250,7 +260,7 @@ public class Jobs implements Plugin {
 			private void sendUpdate() {
 				var sndr = ioSenders.get(jobCategory);
 				if(sndr == null)
-					LOG.debug("Attempt to send update before sender was ready for {0}", jobCategory);
+					LOG.warning("Attempt to send update before sender was ready for {0}", jobCategory);
 				else {
 					sndr.send(Json.createObjectBuilder().
 						add("type", "update").
@@ -274,6 +284,10 @@ public class Jobs implements Plugin {
 			try {
 				job.apply(ctx);
 				return state.result;
+			}
+			catch(Throwable e) {
+				LOG.error("Job failure.", e);
+				throw e;
 			}
 			finally {
 				var hndl = jobsByUuid.remove(state.uuid());

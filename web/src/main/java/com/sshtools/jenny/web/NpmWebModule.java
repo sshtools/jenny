@@ -17,6 +17,8 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.json.Json;
+
 import com.sshtools.bootlace.api.GAV;
 import com.sshtools.jenny.web.WebModule.Type;
 import com.sshtools.jenny.web.WebModule.WebModuleResource;
@@ -27,18 +29,25 @@ public final class NpmWebModule {
 		AUTO, NONE, MINIFY
 	}
 	
+	public static String toNpm(GAV gav) {
+		if(gav.groupId().equals("npm")) {
+			return gav.artifactId();
+		}
+		else {
+			return "@" + gav.groupId().substring(4) + "/" + gav.artifactId();
+		}
+	}
 	
 	public final static class Builder {
 		private Optional<String> main = Optional.empty();
 		private Optional<String> module = Optional.empty();
 		private Optional<String> style = Optional.empty();
-		private Optional<String> type = Optional.empty();
+		private Optional<Type> type = Optional.empty();
 		private Optional<String> sass = Optional.empty();
 		private Optional<ClassLoader> loader = Optional.empty();
 		private Optional<GAV> gav = Optional.empty();
 		private List<WebModuleResource> resources = new ArrayList<WebModule.WebModuleResource>();
 		private final Set<WebModule> requires = new LinkedHashSet<>();
-		private boolean preferJsModule = false;
 		private Compression compression = Compression.AUTO;
 		
 		public  Builder withCompression(Compression compression) {
@@ -55,19 +64,6 @@ public final class NpmWebModule {
 			return this;
 		}
 		
-		public Builder withPreferJs() {
-			return withPreferJsModule(false);
-		}
-		
-		public Builder withPreferJsModule() {
-			return withPreferJsModule(true);
-		}
-		
-		public Builder withPreferJsModule(boolean preferJsModule) {
-			this.preferJsModule = preferJsModule;
-			return this;
-		}
-		
 		public Builder withGAV(String... parts) {
 			return withGAV(GAV.ofParts(parts));
 		}
@@ -75,6 +71,20 @@ public final class NpmWebModule {
 		public Builder withGAV(GAV gav) {
 			this.gav = Optional.of(gav);
 			return this;
+		}
+		
+		public Builder withPackage(String name) {
+			if(name.startsWith("@")) {
+				var idx = name.indexOf('/');
+				return withPackage(name.substring(1, idx), name.substring(idx + 1));
+			}
+			else {
+				return withGAV(GAV.ofParts("npm", name));
+			}
+		}
+		
+		public Builder withPackage(String scope, String name) {
+			return withGAV(GAV.ofParts("npm." + scope, name));
 		}
 		
 		public Builder withClass(Class<?> clazz) {
@@ -101,7 +111,7 @@ public final class NpmWebModule {
 			return this;
 		}
 		
-		public Builder withType(String type) {
+		public Builder withType(Type type) {
 			this.type = Optional.of(type);
 			return this;
 		}
@@ -157,28 +167,71 @@ public final class NpmWebModule {
 				
 				var main = this.main.orElseGet(() -> locateBest(props, items, "main", "js"));
 				var style = this.style.orElseGet(() -> locateBest(props, items, "style", "css"));
-				var type = this.type.orElseGet(() -> props.getProperty("type"));
 				var module = this.module.orElseGet(() -> locateBest(props, items, "module", "js"));
+				var type = this.type.orElseGet(() -> {
+					try {
+						return Type.valueOf(props.getProperty("type").toUpperCase());
+					}
+					catch(Exception e) {
+						return module != null ? Type.MODULE : Type.JS;
+					}
+				});
 				var resource = props.getProperty("resource");
+				var useModule = type == Type.MODULE || type == Type.IMPORTED;
 				
 				var bldr = new WebModule.Builder();
-				bldr.withName(gav.toString());
+				bldr.withName(toNpm(gav));
 				bldr.withLoader(loader);
 				bldr.addResources(this.resources);
 				bldr.withUri("/" + resource);
 				bldr.withRequires(this.requires);
 				bldr.asDirectory();
 				
-				if(module != null && (main == null || preferJsModule ) ) {
+				var packages = props.getProperty("resource") + "/package.json";
+				var pkgres = loader.getResource(packages);
+				if(pkgres != null && useModule) {
+					try(var json = Json.createReader(pkgres.openStream())) {
+						var mfest = json.readObject();
+						var deps = mfest.getJsonObject("dependencies");
+						if(deps != null) {
+							for(var dep : deps.keySet()) {
+								String group;
+								String art;
+								var idx = dep.indexOf('/');
+								if(idx == -1) {
+									group = "npm";
+									art = dep;
+								}
+								else {
+									group = "npm." + dep.substring(1, idx);
+									art = dep.substring(idx + 1);
+								}
+								
+								bldr.withRequires(new NpmWebModule.Builder().
+									withLoader(loader).
+									withGAV(GAV.ofParts(group, art)).
+									withType(type).
+									build());
+							}
+						}
+					}
+				}
+				
+				if(type == Type.IMPORTED) {
 					bldr.addResources(new WebModuleResource.Builder().
-						withType(Type.JS_MODULE).
+						withType(type).
 						withResource(normalize(module)).
 						build());
 				}
-				
-				if(main != null && ( module == null || !preferJsModule ) ) {
+				else if(module != null && type == Type.MODULE ) {
 					bldr.addResources(new WebModuleResource.Builder().
-						withType("module".equals(type) ? Type.JS_MODULE : Type.JS).
+						withType(type).
+						withResource(normalize(module)).
+						build());
+				}
+				else if(main != null && ( type == Type.JS || type == Type.MODULE ) ) {
+					bldr.addResources(new WebModuleResource.Builder().
+						withType(type).
 						withResource(normalize(main)).
 						build());
 				}

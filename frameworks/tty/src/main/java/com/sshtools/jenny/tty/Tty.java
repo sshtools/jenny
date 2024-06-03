@@ -15,6 +15,8 @@
  */
 package com.sshtools.jenny.tty;
 
+import java.text.MessageFormat;
+
 import com.sshtools.bootlace.api.Logs;
 import com.sshtools.bootlace.api.Logs.Log;
 import com.sshtools.bootlace.api.Plugin;
@@ -38,8 +40,8 @@ public class Tty implements Plugin {
 			this.provider = provider;
 		} else if (this.provider != null && provider == null) {
 			this.provider = null;
-		} else {
-			throw new IllegalStateException();
+		} else if(this.provider != null) {
+			throw new IllegalStateException(MessageFormat.format("Cannot be more than one Tty provider. {0} and {1}", this.provider.getClass().getName(), provider.getClass().getName()));
 		}
 	}
 

@@ -15,6 +15,9 @@
  */
 package com.sshtools.jenny.config;
 
+import static com.sshtools.bootlace.api.PluginContext.$;
+
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.UncheckedIOException;
@@ -38,9 +41,11 @@ import com.sshtools.bootlace.api.Logs.Log;
 import com.sshtools.bootlace.api.Plugin;
 import com.sshtools.bootlace.api.PluginContext;
 import com.sshtools.jenny.api.ApiLog;
+import com.sshtools.jenny.product.Product;
 import com.sshtools.jini.INI;
 import com.sshtools.jini.INIReader;
 import com.sshtools.jini.INIWriter;
+import com.sshtools.jini.config.INISet;
 
 public class Config implements Plugin {
 
@@ -48,16 +53,22 @@ public class Config implements Plugin {
 	
 	private final static Log LOG = Logs.of(ApiLog.CONFIG);
 
-	public interface Handle {
+	public interface Handle extends Closeable {
 
 		INI ini();
 
 		void store();
+		
+		@Override
+		void close();
 	}
 
 	private record Key(Plugin plugin, Scope scope) {
 	}
+	
+	private final Product product = $().plugin(Product.class);
 
+	@Deprecated
 	private final Map<Key, Handle> config = new ConcurrentHashMap<>();
 	private URLClassLoader bundleLoader;
 	private final ResourceBundle emptyBundle;
@@ -88,7 +99,16 @@ public class Config implements Plugin {
 			return emptyBundle;
 		}
 	}
+	
+	public INISet.Builder defaultConfig() {
+		return new INISet.Builder(product.info().app());
+	}
+	
+	public INISet.Builder configBuilder(String name) {
+		return new INISet.Builder(name).withApp(product.info().app());
+	}
 
+	@Deprecated
 	public Handle config(Plugin plugin, Scope scope) {
 
 		synchronized (config) {
@@ -121,6 +141,11 @@ public class Config implements Plugin {
 					@Override
 					public String toString() {
 						return iniFile.toString();
+					}
+
+					@Override
+					public void close() {
+						config.remove(key);
 					}
 				};
 				config.put(key, cfg);
