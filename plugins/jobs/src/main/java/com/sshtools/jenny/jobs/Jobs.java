@@ -262,15 +262,20 @@ public class Jobs implements Plugin {
 				if(sndr == null)
 					LOG.warning("Attempt to send update before sender was ready for {0}", jobCategory);
 				else {
-					sndr.send(Json.createObjectBuilder().
-						add("type", "update").
-						add("uuid", state.uuid.toString()).
-						add("val", state.val).
-						add("percent", state.percent()).
-						add("max", state.max).
-						add("text", state.text == null ? "" : state.text).
-						add("title", state.title == null ? "" : state.title).
-						build());
+					try {
+						sndr.send(Json.createObjectBuilder().
+							add("type", "update").
+							add("uuid", state.uuid.toString()).
+							add("val", state.val).
+							add("percent", state.percent()).
+							add("max", state.max).
+							add("text", state.text == null ? "" : state.text).
+							add("title", state.title == null ? "" : state.title).
+							build());
+					}
+					catch(Exception e) {
+						LOG.warning("Failed to send job update.", e);
+					}
 				}
 			}
 

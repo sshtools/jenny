@@ -522,10 +522,7 @@ public final class WebModule implements NodeModel<WebModule> {
 		
 	@Override
 	public void dependencies(Consumer<Dependency<WebModule>> dep) {
-		dep.accept(new Dependency<WebModule>(this, this));
-		requires().forEach(mod -> {
-			dep.accept(new Dependency<WebModule>(this, mod));
-		});
+		doDependencies(dep, this);
 	}
 
 	@Override
@@ -534,5 +531,11 @@ public final class WebModule implements NodeModel<WebModule> {
 				+ name + ", handler=" + handler + ", mount=" + mount + ", uri=" + uri + ", loader=" + loader + "]";
 	}
 	
+	private void doDependencies(Consumer<Dependency<WebModule>> dep, WebModule upstream) {
+		dep.accept(new Dependency<WebModule>(upstream, this));
+		requires().forEach(mod -> {
+			mod.doDependencies(dep, this);
+		});
+	}
 	
 }

@@ -1,0 +1,16 @@
+.file-browser-dialog .modal-dialog {
+	/* height: 600px; */
+	height: 100%;
+}
+
+.file-browser-dialog .modal-content {
+	height: 95%;
+}
+
+.file-browser-dialog .modal-body {
+	height: 100%;
+}
+
+.file-browser-dialog .bootbox-body {
+	height: 100%;
+}  

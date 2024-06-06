@@ -15,12 +15,23 @@
  */
 package com.sshtools.jenny.api;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class Lang {
+	
+	public static List<String> splitStringList(String str, String delimRegex) {
+		var arr = str.split(delimRegex);
+		if(arr.length == 1 && arr[0].equals(""))
+			return Collections.emptyList();
+		else
+			return Arrays.asList(arr);
+	}
 	
 	public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
 

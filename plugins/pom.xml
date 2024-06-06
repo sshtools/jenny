@@ -36,6 +36,7 @@
 		<module>bootswatch</module>
 		<module>jobs</module>
 		<module>toast</module>
+		<module>files</module>
 	</modules>
 	<build>
 		<plugins>

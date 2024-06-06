@@ -1,0 +1,147 @@
+<html lang="en" xmlns:t="https://jadaptive.com/t">
+<t:instruct reset/>
+<form id="filesForm" method="POST" enctype="multipart/form-data" class="h-100" data-files-api-path="${api-path}" data-files-ui-path="${ui-path}" data-files-options="${options}" data-path="${path}">
+
+    <div id="dropZone" class="drop-zone h-100" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" ondragleave="dragLeaveHandler(event);">	
+	    <t:include alerts/>
+	
+	    <input type="hidden" name="pageNumber">
+	    <input type="hidden" name="pageSize">
+	    <input type="hidden" name="op" value="cd">
+	    <input type="hidden" name="options" value="${options}">
+	    <input class="d-none" id="upload" name="upload" type="file">
+
+
+		<t:if component.location-bar>
+
+			<t:if component.navigation>
+				<div class="input-group mb-3">
+					<input placeholder="${path}" name="name" id="location" type="text"
+						class="form-control" value="${path}" required="">
+					<t:if navAction.home>
+						<a href="${ui-path}${home-path}${query-options}"
+							class="btn btn-outline-secondary"><i class="bi bi-house"></i></a>
+					</t:if>
+					<t:if not root>
+						<t:if navAction.up>
+							<a id="up" href="${ui-path}${parent}${query-options}"
+								class="btn btn-outline-secondary"><i class="bi bi-arrow-up"></i></a>
+						</t:if>
+					</t:if>
+					<t:if navAction.root>
+						<a href="${ui-path}${query-options}"
+							class="btn btn-outline-secondary">/</a>
+					</t:if>
+					<t:if navAction.new-folder>
+						<button type="button" id="mkdir" class="btn btn-outline-secondary"><i class="bi bi-folder-plus"></i></button>
+					</t:if>
+				</div>
+				<t:else />
+					<input placeholder="${path}" name="name" id="location" type="text"
+						class="form-control" value="${path}" required="">
+			</t:if>
+		<t:else />
+			<input type="hidden" name="name">
+
+			<t:if component.navigation>
+				<div class="btn-group float-end" role="group"
+					aria-label="Breadcrumbs">
+					<t:if navAction.cd>
+						<a id="cd" href="${ui-path}${query-options}"
+							class="btn btn-secondary">..</a>
+					</t:if>
+					<t:if navAction.home>
+						<a href="${ui-path}${home-path}${query-options}" class="btn btn-secondary"><i class="bi bi-house"></i></a>
+					</t:if>
+					<t:if navAction.up>
+						<t:if not root>
+							<a id="up" href="${ui-path}${parent}${query-options}"
+								class="btn btn-secondary"><i class="bi bi-arrow-up"></i></a>
+						</t:if>
+					</t:if>
+					<t:if navAction.root>
+						<a href="${ui-path}${query-options}" class="btn btn-secondary">/</a>
+					</t:if>
+					<t:if navAction.breadcrumbs>
+						<t:list breadcrumbs>
+							<a href="${ui-path}/${path}${query-options}"
+								class="btn btn-secondary">${name}&nbsp;&nbsp;/</a>
+						</t:list>
+					</t:if>
+				</div>
+			</t:if>
+		</t:if>
+
+		<t:if component.toolbar>
+		    <div id="toolbar" class="mt-3">
+		        <div>
+	    			<t:if action.new-folder>
+		            	<button type="button" id="mkdir" class="btn btn-primary mb-1"><i class="bi bi-folder-plus"></i><span class="d-none d-md-inline ms-2">${%mkdir}</span></button>
+		            </t:if>
+	    			<t:if action.delete>
+		            	<button type="button" disabled id="delete" class="btn btn-primary mb-1"><i class="bi bi-trash"></i><span class="d-none d-md-inline ms-2">${%delete}</span></button>
+		            </t:if>
+		            &nbsp;
+	    			<t:if action.cut>
+		            	<button type="button" disabled id="cut" class="btn btn-primary mb-1"><i class="bi bi-scissors"></i><span class="d-none d-xl-inline ms-2">${%cut}</span></button>
+		            </t:if>
+	    			<t:if action.copy>
+		            	<button type="button" disabled id="copy" class="btn btn-primary mb-1"><i class="bi bi-copy"></i><span class="d-none d-xl-inline ms-2">${%copy}</span></button>
+		            </t:if>
+	    			<t:if action.paste>
+			            <button type="button" ${clipboard-occupied:=disabled} id="paste" class="btn btn-primary position-relative mb-1">
+			                <i class="bi bi-clipboard"></i><span class="d-none d-xl-inline ms-2">${%paste}</span>
+			                <t:if clipboard-occupied>
+			                    <span class="badge bg-secondary">${clipboard-items}</span>
+							</t:if>
+			            </button>
+			        </t:if>
+		            &nbsp;
+	    			<t:if action.download>
+		            	<button type="button" disabled id="download" class="btn btn-primary"><i class="bi bi-download"></i><span class="d-none d-lg-inline ms-2 mb-1">${%download}</span></button>
+		            </t:if>
+	    			<t:if action.upload>
+		            	<a href="upload${path}" id="upload" class="btn btn-primary"><i class="bi bi-upload"></i><span class="d-none d-lg-inline ms-2 mb-1">${%upload}</span></a>
+		            </t:if>
+		        </div>
+		    </div>
+		</t:if>
+	    
+	    
+	    <t:if component.options>
+		    <div id="options">
+			    <div class="form-check form-switch mt-3 float-start" role="form">
+			        <label for="hiddenFiles" class="form-label">${%hiddenFiles}</label>
+			        <input type="checkbox" class="form-control form-check-input" id="hiddenFiles" name="hiddenFiles" ${hiddenFiles:+checked}>
+			    </div>
+		    </div>
+		<t:else/>
+	    	<input type="hidden" name="hiddenFiles" value="${hiddenFiles}">
+		</t:if>
+	    
+	    <table id="files"
+	           data-page-list="15 20, 50, 100"
+	           data-page-size="15" 
+	           data-classes="table table-hover table-sm" 
+	           data-toggle="table" 
+	           data-toolbar="#options"
+	           data-url="${api-path}/${path}${query-options}" 
+	           data-click-to-select="true"
+	           data-pagination="true" 
+	           data-search="${component.search:?true:false}"
+	           data-single-select="${selectable:?false:true}"
+	           data-checkbox-header="${selectable:?true:false}">
+	        <thead>
+	            <tr> 
+	                <th data-checkbox="true"></th>
+	                <th class="col-xs-6" data-sortable="true" data-field="name" data-formatter="nameFormatter">${%table.file}</th>
+	                <th class="col-xs-2" data-sortable="true" data-field="size" data-align="right" data-formatter="sizeFormatter">${%table.size}</th>
+	                <th class="col-xs-3 text-muted" data-sortable="true" data-field="lastModified"  data-formatter="dateFormatter">${%table.lastModified}</th>
+	                <t:if row-actions>
+                    	<th class="col-xs-1" data-align="right" data-formatter="actionsFormatter"></th>
+                    </t:if>
+	            </tr>
+	        </thead>
+	    </table>
+    </div>
+</form>

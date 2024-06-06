@@ -1,0 +1,26 @@
+<html lang="en" xmlns:t="https://jadaptive.com/t">
+<t:instruct reset />
+<form id="uploadForm" method="POST"
+	enctype="multipart/form-data" class="h-100">
+	<div id="dropZone" class="drop-zone h-100" ondrop="dropHandler(event);" ondragover="dragOverHandler(event);" ondragleave="dragLeaveHandler(event);">
+		<a href="files${path}">${path}</a>
+		<t:if alerts>
+		  <t:include alerts />
+		</t:if>
+		<div class="mb-3 mt-3">
+			<label for="file1" class="form-label">${%files}</label>
+			<div id="files">
+				<template id="fileTemplate">
+				    <div class="input-group mt-3">
+					   <input multiple class="form-control" name="file1" type="file" id="file1">
+					   <span class="input-group-text d-none" id="file1Remove"><a href="#"><i class="bi bi-eraser"></i></a></span>
+					</div>
+				</template>
+			</div>
+		</div>
+		<button id="save" class="btn btn-primary" type="submit"role="submitter">
+            ${%upload}
+        </button>
+
+	</div>
+</form>

@@ -37,16 +37,25 @@ public class I18N implements Plugin {
 	private WebModule webModule;
 	
 	final static String RNDTKN = UUID.randomUUID().toString().replace("-", "");
+	
+	public final static WebModule I18N_MODULE  = WebModule.of("/i18n/i18n.js", I18N.class, "i18n.js"); 
 
 	@Override
 	public void afterOpen(PluginContext context) {
 		web = context.plugin(Web.class);
-		webModule = WebModule.of("/i18n/i18n.js", I18N.class, "i18n.js");
+		webModule = I18N_MODULE;
 		context.autoClose(web.modules(webModule));
 	}
+	
+	public static WebModule module(Class<?> base) {
+		return WebModule.js(
+				"/" + base.getName() + ".i18n.js", 
+				script(base), 
+				I18N_MODULE
+		);
+	}
 
-	public Handler i18NScript(Class<?> bundle) {
-		
+	public static Handler script(Class<?> bundle) {
 		return tx -> {
 			/* TODO make cacheable */
 			var rbundle = Resources.of(bundle, WebState.get().locale());
@@ -66,6 +75,12 @@ public class I18N implements Plugin {
 		};
 	}
 
+	@Deprecated
+	public Handler i18NScript(Class<?> bundle) {
+		return script(bundle);
+	}
+
+	@Deprecated
 	public WebModule webModule() {
 		return webModule;
 	}
