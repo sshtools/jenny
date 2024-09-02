@@ -42,4 +42,8 @@ public record ResourceRef(Class<?> base, ClassLoader loader, String path) {
 			return classpathResource(base(), path());
 		}
 	}
+
+	public ResourceRef translate(String uri) {
+		return new ResourceRef(base, loader, uri + "/" + path);
+	}
 }

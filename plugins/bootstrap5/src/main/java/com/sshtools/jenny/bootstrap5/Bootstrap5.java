@@ -18,10 +18,12 @@ package com.sshtools.jenny.bootstrap5;
 import static com.sshtools.bootlace.api.GAV.ofSpec;
 import static com.sshtools.jenny.web.NpmWebModule.of;
 
+import com.sshtools.bootlace.api.GAV;
 import com.sshtools.bootlace.api.Plugin;
 import com.sshtools.jenny.web.NpmWebModule;
 import com.sshtools.jenny.web.WebModule;
 import com.sshtools.jenny.web.WebModule.Type;
+import com.sshtools.jenny.web.WebModule.WebModuleResource;
 import com.sshtools.tinytemplate.bootstrap.forms.Form;
 
 public class Bootstrap5 implements Plugin {
@@ -31,6 +33,14 @@ public class Bootstrap5 implements Plugin {
 			Bootstrap5.class, 
 			ofSpec("npm:jquery")
 		);
+	
+	public final static WebModule MODULE_JQUERY_TREEGRID = new NpmWebModule.Builder().
+			 	withClass(Bootstrap5.class).
+			 	withMain("js/jquery.treegrid.min.js").
+			 	withGAV(GAV.ofSpec("npm:jquery-treegrid")).
+			 	withRequires(MODULE_JQUERY).
+			 	addResources(WebModuleResource.css(Bootstrap5.class, "css/jquery.treegrid.css")).
+			 	build();
 	
 	public final static WebModule MODULE_BOOTSTRAP5 = new NpmWebModule.Builder().
 		withGAV(ofSpec("npm:bootstrap")).
@@ -53,6 +63,14 @@ public class Bootstrap5 implements Plugin {
 		withGAV(ofSpec("npm:bootstrap-table")).
 		withClass(Bootstrap5.class).
 		withRequires(MODULE_BOOTSTRAP5).
+		build();
+	
+	public final static WebModule MODULE_BOOTSTRAP_TABLE_TREEGRID = new NpmWebModule.Builder().
+		withMain("dist/extensions/treegrid/bootstrap-table-treegrid.min.js").
+		withType(Type.JS).
+		withGAV(ofSpec("npm:bootstrap-table")).
+		withClass(Bootstrap5.class).
+		withRequires(MODULE_JQUERY_TREEGRID, MODULE_BOOTSTRAP_TABLE).
 		build();
 	
 	public final static WebModule MODULE_BOOTSTRAP5_AUTOCOMPLETE = 

@@ -228,27 +228,51 @@ public final class Alerts extends ArrayList<Alerts.Alert> {
 	}
 
 	public final static TemplateModel danger(Class<?> bundle, String key, Object... args) {
-		return of(new Builder().withStyle(Style.DANGER).withTitleKey(key, args).withBundle(bundle).build()).template();
+		return of(asDanger(bundle, key, args)).template();
+	}
+
+	public static Alert asDanger(Class<?> bundle, String key, Object... args) {
+		return new Builder().withStyle(Style.DANGER).withTitleKey(key, args).withBundle(bundle).build();
 	}
 
 	public final static TemplateModel danger(String message) {
-		return of(new Builder().withStyle(Style.DANGER).withTitle(message).build()).template();
+		return of(asDanger(message)).template();
+	}
+
+	public static Alert asDanger(String message) {
+		return new Builder().withStyle(Style.DANGER).withTitle(message).build();
 	}
 
 	public final static TemplateModel primary(String message) {
-		return of(new Builder().withStyle(Style.PRIMARY).withTitle(message).build()).template();
+		return of(asPrimary(message)).template();
+	}
+
+	public static Alert asPrimary(String message) {
+		return new Builder().withStyle(Style.PRIMARY).withTitle(message).build();
 	}
 
 	public final static TemplateModel primary(Class<?> bundle, String key, Object... args) {
-		return of(new Builder().withStyle(Style.PRIMARY).withTitleKey(key, args).withBundle(bundle).build()).template();
+		return of(asPrimary(bundle, key, args)).template();
+	}
+
+	public static Alert asPrimary(Class<?> bundle, String key, Object... args) {
+		return new Builder().withStyle(Style.PRIMARY).withTitleKey(key, args).withBundle(bundle).build();
 	}
 
 	public final static TemplateModel success(String message) {
-		return of(new Builder().withStyle(Style.SUCCESS).withTitle(message).build()).template();
+		return of(asSuccess(message)).template();
+	}
+
+	public static Alert asSuccess(String message) {
+		return new Builder().withStyle(Style.SUCCESS).withTitle(message).build();
 	}
 
 	public final static TemplateModel success(Class<?> bundle, String key, Object... args) {
-		return of(new Builder().withStyle(Style.SUCCESS).withTitleKey(key, args).withBundle(bundle).build()).template();
+		return of(asSuccess(bundle, key, args)).template();
+	}
+
+	public static Alert asSuccess(Class<?> bundle, String key, Object... args) {
+		return new Builder().withStyle(Style.SUCCESS).withTitleKey(key, args).withBundle(bundle).build();
 	}
 
 	public final static TemplateModel warning(String message) {
@@ -256,31 +280,59 @@ public final class Alerts extends ArrayList<Alerts.Alert> {
 	}
 
 	public final static TemplateModel warning(Class<?> bundle, String key, Object... args) {
-		return of(new Builder().withStyle(Style.WARNING).withTitleKey(key, args).withBundle(bundle).build()).template();
+		return of(asWarning(bundle, key, args)).template();
+	}
+
+	public static Alert asWarning(Class<?> bundle, String key, Object... args) {
+		return new Builder().withStyle(Style.WARNING).withTitleKey(key, args).withBundle(bundle).build();
 	}
 
 	public final static TemplateModel info(Class<?> bundle, String key, Object... args) {
-		return of(new Builder().withStyle(Style.INFO).withTitleKey(key, args).withBundle(bundle).build()).template();
+		return of(asInfo(bundle, key, args)).template();
+	}
+
+	public static Alert asInfo(Class<?> bundle, String key, Object... args) {
+		return new Builder().withStyle(Style.INFO).withTitleKey(key, args).withBundle(bundle).build();
 	}
 
 	public final static TemplateModel info(String message) {
-		return of(new Builder().withStyle(Style.INFO).withTitle(message).build()).template();
+		return of(asInfo(message)).template();
+	}
+
+	public static Alert asInfo(String message) {
+		return new Builder().withStyle(Style.INFO).withTitle(message).build();
 	}
 
 	public final static TemplateModel light(Class<?> bundle, String key, Object... args) {
-		return of(new Builder().withStyle(Style.LIGHT).withTitleKey(key, args).withBundle(bundle).build()).template();
+		return of(asLight(bundle, key, args)).template();
+	}
+
+	public static Alert asLight(Class<?> bundle, String key, Object... args) {
+		return new Builder().withStyle(Style.LIGHT).withTitleKey(key, args).withBundle(bundle).build();
 	}
 
 	public final static TemplateModel light(String message) {
-		return of(new Builder().withStyle(Style.LIGHT).withTitle(message).build()).template();
+		return of(asLight(message)).template();
+	}
+
+	public static Alert asLight(String message) {
+		return new Builder().withStyle(Style.LIGHT).withTitle(message).build();
 	}
 
 	public final static TemplateModel dark(Class<?> bundle, String key, Object... args) {
-		return of(new Builder().withStyle(Style.DARK).withTitleKey(key, args).withBundle(bundle).build()).template();
+		return of(asDark(bundle, key, args)).template();
+	}
+
+	public static Alert asDark(Class<?> bundle, String key, Object... args) {
+		return new Builder().withStyle(Style.DARK).withTitleKey(key, args).withBundle(bundle).build();
 	}
 
 	public final static TemplateModel dark(String message) {
-		return of(new Builder().withStyle(Style.DARK).withTitle(message).build()).template();
+		return of(asDark(message)).template();
+	}
+
+	public static Alert asDark(String message) {
+		return new Builder().withStyle(Style.DARK).withTitle(message).build();
 	}
 
 	public enum Style {

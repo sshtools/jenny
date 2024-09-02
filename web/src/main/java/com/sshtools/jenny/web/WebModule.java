@@ -16,6 +16,11 @@
 package com.sshtools.jenny.web;
 
 import java.io.Closeable;
+import java.io.UncheckedIOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,7 +32,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import com.sshtools.bootlace.api.DependencyGraph.Dependency;
 import com.sshtools.bootlace.api.NodeModel;
@@ -42,7 +46,7 @@ import com.sshtools.uhttpd.UHTTPD.Transaction;
 public final class WebModule implements NodeModel<WebModule> {
 	
 	public enum Mount {
-		FILE, DIRECTORY, CONTENT
+		FILE, DIRECTORY, CONTENT, URL
 	}
 
 	public enum Type {
@@ -234,6 +238,15 @@ public final class WebModule implements NodeModel<WebModule> {
 		private final Optional<Handler> handler;
 		private final Optional<String> content;
 		private WebModule module;
+
+		private WebModuleResource(WebModuleResource res, String uri) {
+			this.placement = res.placement;
+			this.type = res.type;
+			this.handler = res.handler;
+			this.content = res.content;
+			this.module = res.module;
+			this.ref = res.ref.translate(uri);
+		}
 		
 		private WebModuleResource(Builder builder) {
 			this.ref = builder.ref;
@@ -244,6 +257,10 @@ public final class WebModule implements NodeModel<WebModule> {
 			this.type = builder.type;
 			this.handler = builder.handler;
 			this.content = builder.content;
+		}
+		
+		public ResourceRef ref() {
+			return ref;
 		}
 		
 		public String content() {
@@ -289,6 +306,10 @@ public final class WebModule implements NodeModel<WebModule> {
 			}
 			else
 				throw new IllegalStateException("Not a script type.");
+		}
+
+		public WebModuleResource translate(String uri) {
+			return new WebModuleResource(this, uri);
 		}
 	}
 		
@@ -339,6 +360,24 @@ public final class WebModule implements NodeModel<WebModule> {
 			this.uri = uri;
 			return this;
 		}
+
+		public Builder withUrl(String url) {
+			try {
+				return withUrl(URI.create(url).toURL());
+			} catch (MalformedURLException e) {
+				throw new UncheckedIOException(e);
+			}
+		}
+		
+		public Builder withUrl(URL url) {
+			asUrl();
+			try {
+				this.uri = url.toURI().toString();
+			} catch (URISyntaxException e) {
+				throw new IllegalArgumentException(e);
+			}
+			return this;
+		}
 		
 		public Builder withLoader(ClassLoader loader) {
 			this.loader = Optional.of(loader);
@@ -347,6 +386,10 @@ public final class WebModule implements NodeModel<WebModule> {
 		
 		public Builder asFile() {
 			return as(Mount.FILE);
+		}
+		
+		public Builder asUrl() {
+			return as(Mount.URL);
 		}
 		
 		public Builder asDirectory() {
@@ -378,7 +421,7 @@ public final class WebModule implements NodeModel<WebModule> {
 	private final List<WebModuleResource> resources;
 	private final Set<WebModule> requires;
 	private final String name;
-	private final Handler handler;
+	private final Optional<Handler> handler;
 	private final Mount mount;
 	private final String uri;
 	private Optional<ClassLoader> loader;
@@ -394,11 +437,16 @@ public final class WebModule implements NodeModel<WebModule> {
 		}
 		
 		var uri = builder.uri;
-		if(uri != null && !uri.startsWith("/")) {
-			uri = "/" + uri;
+		if(uri != null && !uri.startsWith("/") ) {
+			if(mount == Mount.URL && !uri.startsWith("http://") && !uri.startsWith("https://"))  {
+				uri = "https://" + uri;
+			}
+			else if(mount != Mount.URL) {
+				uri = "/" + uri;
+			}
 		}
 		
-		if(mount == Mount.DIRECTORY) {
+		if(mount == Mount.DIRECTORY || mount == Mount.URL) {
 			if(!uri.endsWith("/")) {
 				uri += "/";
 			}
@@ -426,7 +474,7 @@ public final class WebModule implements NodeModel<WebModule> {
 				 * under the URI
 				 */
 				var loader = this.loader.get();
-				handler = new Handler() {
+				handler = Optional.of(new Handler() {
 					
 					@Override
 					public void get(Transaction req) throws Exception {
@@ -434,14 +482,14 @@ public final class WebModule implements NodeModel<WebModule> {
 						var fullPath = WebModule.this.uri.substring(1) + "/" + rel;
 						UHTTPD.classpathResource(loader, fullPath).get(req);
 					}
-				};
+				});
 			}
 			else {
 				/* Web module groups a list a WebModuleResource under one
 				 * URI and uses the path of each resource to identify the
 				 * resource
 				 */
-				handler = new Handler() {
+				handler = Optional.of(new Handler() {
 					@Override
 					public void get(Transaction req) throws Exception {
 						var rel = req.match(0);
@@ -460,11 +508,14 @@ public final class WebModule implements NodeModel<WebModule> {
 							}
 						}
 					}
-				};
+				});
 			}
 		}
 		else if(mount == Mount.CONTENT) {
-			this.handler = (c) -> {};
+			this.handler = Optional.of((c) -> {});
+		}
+		else if(mount == Mount.URL) {
+			this.handler = Optional.empty();
 		}
 		else {
 			/**
@@ -472,10 +523,10 @@ public final class WebModule implements NodeModel<WebModule> {
 			 */
 			var res = resources.get(0);
 			if(res.handler.isPresent()) {
-				this.handler = res.handler.get();
+				this.handler = Optional.of(res.handler.get());
 			}
 			else {
-				this.handler = res.ref.handler();
+				this.handler = Optional.of(res.ref.handler());
 			}
 		}
 	}
@@ -504,7 +555,11 @@ public final class WebModule implements NodeModel<WebModule> {
 	}
 	
 	public Handler handler() {
-		return handler;
+		return handler.orElseThrow(() -> new IllegalStateException("Module does not have a handler."));
+	}
+	
+	public Mount mount() {
+		return mount;
 	}
 
 	public List<WebModuleResource> resources() {
@@ -536,6 +591,10 @@ public final class WebModule implements NodeModel<WebModule> {
 		requires().forEach(mod -> {
 			mod.doDependencies(dep, this);
 		});
+	}
+
+	public boolean hasHandler() {
+		return handler.isPresent();
 	}
 	
 }

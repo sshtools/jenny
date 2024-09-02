@@ -15,6 +15,7 @@
  */
 package com.sshtools.jenny.web;
 
+import java.io.FileNotFoundException;
 import java.nio.file.NoSuchFileException;
 import java.util.function.Consumer;
 
@@ -59,7 +60,7 @@ public final class Route extends AbstractContext {
 				tx.selector(c.getKey());
 				try {
 					c.getValue().get(tx);
-				} catch (NoSuchFileException fnfe) {
+				} catch (NoSuchFileException | FileNotFoundException fnfe) {
 					if (LOG.debug())
 						LOG.debug("File not found. {0}", fnfe.getMessage());
 					tx.notFound();

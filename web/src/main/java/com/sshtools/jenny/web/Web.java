@@ -177,7 +177,9 @@ public final class Web implements Plugin {
 				withClasspathResources("/(.*)", getClass().getClassLoader(), "web/");
 			
 			configureServer(bldr);
-				
+			
+			bldr.handle(new AllSelector(), tx -> tx.responseCode(Status.NOT_FOUND));
+			
 			httpd = bldr.build();
 
 			httpd.start();
@@ -243,6 +245,10 @@ public final class Web implements Plugin {
 		
 	}
 	
+	public RootContext httpd() {
+		return httpd;
+	}
+
 	public Router router() {
 		return router;
 	}
@@ -279,11 +285,13 @@ public final class Web implements Plugin {
 		 */
 		for(var module : modules) {
 			if(!this.modules.containsKey(module.name())) {
-				var hndl = router().route().
-					handle(module.pattern(), module.handler()).
-					build();
-				
-				l.add(hndl);
+				if(module.hasHandler()) {
+					var hndl = router().route().
+						handle(module.pattern(), module.handler()).
+						build();
+					
+					l.add(hndl);
+				}
 				this.modules.put(module.name(), module);
 				m.add(module.name());
 			}
@@ -316,6 +324,9 @@ public final class Web implements Plugin {
 				bldr.withoutCompression();
 			}
 		});
+		
+		/* TODO Arggh... The "view source" in firefox bug when compression is on really needs fixing */
+		bldr.withoutCompression();
 		
 		webConfig.ini().sectionOr("ncsa").ifPresent(cfg -> {
 			bldr.withLogger(new NCSALoggerBuilder().

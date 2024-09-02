@@ -182,10 +182,12 @@ public final class NpmWebModule {
 				var bldr = new WebModule.Builder();
 				bldr.withName(toNpm(gav));
 				bldr.withLoader(loader);
-				bldr.addResources(this.resources);
 				bldr.withUri("/" + resource);
 				bldr.withRequires(this.requires);
 				bldr.asDirectory();
+				bldr.addResources(this.resources.stream().map(resx ->
+					resx.translate(resource)
+				).toList());
 				
 				var packages = props.getProperty("resource") + "/package.json";
 				var pkgres = loader.getResource(packages);
