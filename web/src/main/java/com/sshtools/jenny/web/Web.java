@@ -48,12 +48,13 @@ import com.sshtools.bootlace.api.Plugin;
 import com.sshtools.bootlace.api.PluginContext;
 import com.sshtools.jenny.api.XPoints;
 import com.sshtools.jenny.config.Config;
-import com.sshtools.jenny.config.Config.Handle;
 import com.sshtools.jenny.web.Router.RouterBuilder;
 import com.sshtools.jenny.web.WebModule.Placement;
 import com.sshtools.jenny.web.WebModule.Type;
 import com.sshtools.jenny.web.WebModule.WebModuleResource;
 import com.sshtools.jenny.web.WebModule.WebModulesRef;
+import com.sshtools.jini.INI;
+import com.sshtools.jini.config.INISet;
 import com.sshtools.tinytemplate.Templates.Logger;
 import com.sshtools.tinytemplate.Templates.TemplateModel;
 import com.sshtools.tinytemplate.Templates.TemplateProcessor;
@@ -67,6 +68,17 @@ import com.sshtools.uhttpd.UHTTPD.Transaction;
 
 public final class Web implements Plugin {
 	
+	public static final String KEYSTORE_TYPE = "keystore-type";
+	public static final String KEYSTORE_PASSWORD = "keystore-password";
+	public static final String KEYSTORE_FILE = "keystore-file";
+	public static final String KEY_PASSWORD = "key-password";
+	public static final String ADDRESS = "address";
+	public static final String PORT = "port";
+	public static final String HTTPS = "https";
+	public static final String NCSA = "ncsa";
+	public static final String TUNING = "tuning";
+	public static final String HTTP = "http";
+
 	final static Log LOG = Logs.of(WebLog.WEB);
 
 	public static final String TX_BASE_HREF = "base.href";
@@ -76,6 +88,8 @@ public final class Web implements Plugin {
 		tx.attr(Web.TX_BASE_HREF, (  tx.secure() ? "https://" : "http://" ) + tx.host() + tx.contextPath());
 	}
 	
+	private final Config config = PluginContext.$().plugin(Config.class);
+	
 	private final TemplateProcessor tp;
 	private RootContext httpd;
 	private final XPoints extensions;
@@ -83,6 +97,7 @@ public final class Web implements Plugin {
 	private final ScheduledExecutorService queue;
 	private final Map<String, WebModule> modules = new ConcurrentHashMap<>();
 	private final List<WebModule> globalModules = new ArrayList<WebModule>();
+	private final INISet configSet;
 
 	private com.sshtools.bootlace.api.RootContext rootContext;
 	
@@ -125,6 +140,14 @@ public final class Web implements Plugin {
 		/* Routes */
 		router = new RouterBuilder().
 				build();
+		
+		if(Boolean.getBoolean("jenny.newConfig")) {
+			configSet = config.configBuilder("web", Web.class, "Web.schema.ini").
+					build();
+		} 
+		else {
+			configSet = null;
+		}
 	}
 	
 	public Closeable global(WebModule... modules) {
@@ -143,7 +166,6 @@ public final class Web implements Plugin {
 	@Override
 	public void afterOpen(PluginContext context) {
 		this.rootContext = context.root();
-		
 		
 		/* Main server loop */
 		try {
@@ -172,8 +194,6 @@ public final class Web implements Plugin {
 				}).
 				
 				/* Default resource */
-				get("/npm2mvn/(.*)", this::npmResource).
-				withClasspathResources("/npm2mvn/(.*)", getClass().getClassLoader(), "npm2mvn/").
 				withClasspathResources("/(.*)", getClass().getClassLoader(), "web/");
 			
 			configureServer(bldr);
@@ -185,7 +205,9 @@ public final class Web implements Plugin {
 			httpd.start();
 			
 			var webConfig = getWebConfig();
-			webConfig.ini().getOr("port-info").ifPresent(pi -> {
+			var stateSection = webConfig.obtainSection("state");
+			
+			stateSection.getOr("port-info").ifPresent(pi -> {
 				try(var out = new PrintWriter(Files.newBufferedWriter(Paths.get(pi)), true)) {
 					httpd.httpPort().ifPresent(p -> out.println("http.port=" + p));
 					httpd.httpsPort().ifPresent(p -> out.println("https.port=" + p));
@@ -206,10 +228,17 @@ public final class Web implements Plugin {
 	@Override
 	public void close() {
 		httpd.close();
+		if(configSet != null) {
+			configSet.close();
+		}
 	}
 	
 	public XPoints extensions() {
 		return extensions;
+	}
+	
+	public INI configuration() {
+		return configSet.document();
 	}
 
 	public ScheduledExecutorService globalUiQueue() {
@@ -301,25 +330,29 @@ public final class Web implements Plugin {
 	
 
 	private void configureServer(RootContextBuilder bldr) {
-		var webConfig = getWebConfig();
+		var ini = getWebConfig();
 		
-		var http = webConfig.ini().sectionOr("http");
+		var http = ini.sectionOr(HTTP);
 		http.ifPresent(cfg -> {
-			bldr.withHttp(cfg.getInt("port", 8080));
-			bldr.withHttpAddress(cfg.get("address", "::"));
+			var httpPort = cfg.getInt(PORT, 8080);
+			if(httpPort > 0)
+				bldr.withHttp(httpPort);
+			bldr.withHttpAddress(cfg.get(ADDRESS, "::"));
 		});
 		
-		var https = webConfig.ini().sectionOr("https");
+		var https = ini.sectionOr(HTTPS);
 		https.ifPresent(cfg -> {
-			bldr.withHttps(cfg.getInt("port", 8443));
-			bldr.withHttpsAddress(cfg.get("address", "::"));
-			cfg.getOr("key-password").ifPresent(kp -> bldr.withKeyPassword(kp.toCharArray()));
-			cfg.getOr("keystore-file").ifPresent(ks -> bldr.withKeyStoreFile(Paths.get(ks)));
-			cfg.getOr("keystore-password").ifPresent(kp -> bldr.withKeyPassword(kp.toCharArray()));
-			cfg.getOr("keystore-type").ifPresent(kp -> bldr.withKeyStoreType(kp));
+			var httpsPort = cfg.getInt(PORT, 8443);
+			if(httpsPort > 0)
+				bldr.withHttps(httpsPort);
+			bldr.withHttpsAddress(cfg.get(ADDRESS, "::"));
+			cfg.getOr(KEY_PASSWORD).ifPresent(kp -> bldr.withKeyPassword(kp.toCharArray()));
+			cfg.getOr(KEYSTORE_FILE).ifPresent(ks -> bldr.withKeyStoreFile(Paths.get(ks)));
+			cfg.getOr(KEYSTORE_PASSWORD).ifPresent(kp -> bldr.withKeyPassword(kp.toCharArray()));
+			cfg.getOr(KEYSTORE_TYPE).ifPresent(kp -> bldr.withKeyStoreType(kp));
 		});
 		
-		webConfig.ini().sectionOr("tuning").ifPresent(cfg -> {
+		ini.sectionOr(TUNING).ifPresent(cfg -> {
 			if(!cfg.getBoolean("compression", true)) {
 				bldr.withoutCompression();
 			}
@@ -328,7 +361,7 @@ public final class Web implements Plugin {
 		/* TODO Arggh... The "view source" in firefox bug when compression is on really needs fixing */
 		bldr.withoutCompression();
 		
-		webConfig.ini().sectionOr("ncsa").ifPresent(cfg -> {
+		ini.sectionOr(NCSA).ifPresent(cfg -> {
 			bldr.withLogger(new NCSALoggerBuilder().
 					withAppend(cfg.getBoolean("append", true)).
 					withDirectory(Paths.get(cfg.get("directory", System.getProperty("user.dir") + File.separator + "logs"))).
@@ -340,10 +373,15 @@ public final class Web implements Plugin {
 		});
 	}
 
-	private Handle getWebConfig() {
-		var config = PluginContext.$().plugin(Config.class);
-		var webConfig = config.config(this, Scope.SYSTEM);
-		return webConfig;
+	private INI getWebConfig() {
+		if(configSet == null) {
+			var config = PluginContext.$().plugin(Config.class);
+			var webConfig = config.config(this, Scope.SYSTEM);
+			return webConfig.ini();
+		}
+		else {
+			return configSet.document();
+		}
 	}
 	
 	private List<TemplateModel> cssModules(Transaction tx, String content, Placement placement) {
@@ -431,22 +469,6 @@ public final class Web implements Plugin {
 				return mdl;
 			}
 		).toList();
-	}
-	
-	/**
-	 * To be replaced by {@link NpmWebModule}.
-	 * 
-	 * @param tx
-	 */
-	@Deprecated
-	private void npmResource(Transaction tx) {
-		rootContext.globalResource(tx.match(0)).ifPresent(res -> {
-			try {
-				UHTTPD.urlResource(res).get(tx);
-			} catch (Exception e) {
-				LOG.error("Failed to serve static npm resource.", e);
-			}
-		});
 	}
 
 	private Collection<WebModuleResource> sortModules(Collection<Type> types, Placement placement) {

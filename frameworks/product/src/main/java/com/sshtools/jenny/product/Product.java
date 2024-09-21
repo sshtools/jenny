@@ -24,14 +24,15 @@ public final class Product implements Plugin {
 	
 	private Info info;
 
-	public record Info(String app, String vendor) {
+	public record Info(String app, String vendor, String version) {
 	}
 	
 	public final static class Builder {
 
 		private Optional<String> app = Optional.empty();
 		private Optional<Class<?>> appClass = Optional.empty(); 
-		private Optional<String> vendor = Optional.empty();
+		private Optional<String> vendor = Optional.empty(); 
+		private Optional<String> version = Optional.empty();
 		
 		public Builder withApp(Class<?> appClass) {
 			this.appClass = Optional.of(appClass);
@@ -48,10 +49,16 @@ public final class Product implements Plugin {
 			return this;
 		}	
 		
+		public Builder withVersion(String version) {
+			this.version = Optional.of(version);
+			return this;
+		}
+		
 		public Info build() {
 			return new Info(
 				app.or(() -> appClass.map(Class::getName)).orElseThrow(() -> new IllegalStateException("'App' must be set, either a class or short ID.")),
-				vendor.orElse("Unknown")
+				vendor.orElse("Unknown"),
+				version.orElse("Unknown")
 			);
 		}
 	}

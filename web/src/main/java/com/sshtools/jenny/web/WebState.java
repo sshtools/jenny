@@ -15,11 +15,12 @@
  */
 package com.sshtools.jenny.web;
 
-import java.nio.file.attribute.UserPrincipal;
+import java.security.Principal;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 import com.sshtools.uhttpd.UHTTPD.Session;
 
@@ -54,7 +55,7 @@ public final class WebState  {
 		this.session = session;
 	}
 	
-	public Optional<UserPrincipal> user() {
+	public Optional<Principal> user() {
 		return Optional.ofNullable(get(USER));
 	}
 	
@@ -76,6 +77,12 @@ public final class WebState  {
 		return env.containsKey(key) ? (V)env.get(key) : defaultValue;
 	}
 	
+
+	@SuppressWarnings("unchecked")
+	public <V> V get(String key, Supplier<V> defaultValue) {
+		return env.containsKey(key) ? (V)env.get(key) : defaultValue.get();
+	}
+	
 	@SuppressWarnings("unchecked")
 	public <V> V set(String key, V val) {
 		return (V)env.put(key, val);
@@ -90,7 +97,7 @@ public final class WebState  {
 		return this;
 	}
 	
-	public void authenticate(UserPrincipal user) {
+	public void authenticate(Principal user) {
 		user().ifPresentOrElse(u -> {
 			throw new IllegalStateException("Already authenticated.");
 		}, () -> set(USER, user));

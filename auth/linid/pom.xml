@@ -21,39 +21,60 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.sshtools</groupId>
-		<artifactId>jenny</artifactId>
+		<artifactId>jenny-auth</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 		<relativePath>../</relativePath>
 	</parent>
-	<name>Jenny - Config</name>
-	<artifactId>jenny-config</artifactId>
+	<properties>
+		<!-- Linid needs Java 22 for the official FFM API -->
+        <maven.compiler.target>22</maven.compiler.target>
+        <maven.compiler.source>22</maven.compiler.source>
+	</properties>
+	<name>Jenny - Alternative (Java 22) Linux Authentication</name>
+	<artifactId>jenny-auth-linid</artifactId>
 	<dependencies>
-		
+
+		<!-- Framework Supplied -->
+		<dependency>
+            <groupId>${project.groupId}</groupId>
+			<artifactId>jenny-auth-api</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
 		<!-- Framework Provided -->
 		<dependency>
-            <groupId>${project.groupId}</groupId>
-			<artifactId>jenny-api</artifactId>
-			<version>${project.version}</version>
-			<scope>provided</scope> 
-		</dependency> 
-		<dependency>
-            <groupId>${project.groupId}</groupId>
-			<artifactId>jenny-product</artifactId>
-			<version>${project.version}</version>
-			<scope>provided</scope> 
-		</dependency>
-		<dependency>
-			<groupId>com.sshtools</groupId>
+            <groupId>com.sshtools</groupId>
 			<artifactId>bootlace-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>jenny-api</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
 		<!-- Required -->
 		<dependency>
-			<groupId>com.sshtools</groupId>
-            <artifactId>jini-config</artifactId>
-            <version>0.3.3</version>
+			<groupId>uk.co.bithatch</groupId>
+			<artifactId>linid</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
-		
+
+
 	</dependencies>
+	
+	<build>
+		<plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <release>22</release>
+                </configuration>
+            </plugin>
+		</plugins>
+	</build>
+
 </project>

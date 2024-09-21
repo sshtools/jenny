@@ -20,8 +20,12 @@ import static com.sshtools.uhttpd.UHTTPD.classpathResource;
 import com.sshtools.uhttpd.UHTTPD.Handler;
 
 public record ResourceRef(Class<?> base, ClassLoader loader, String path) {
+
+	public ResourceRef(Class<?> base) {
+		this(base, null);
+	}
 	
-	ResourceRef(Class<?> base, String path) {
+	public ResourceRef(Class<?> base, String path) {
 		this(base, base.getClassLoader(), path);
 	}
 	
@@ -42,8 +46,21 @@ public record ResourceRef(Class<?> base, ClassLoader loader, String path) {
 			return classpathResource(base(), path());
 		}
 	}
-
+	
 	public ResourceRef translate(String uri) {
 		return new ResourceRef(base, loader, uri + "/" + path);
+	}
+
+	public String fullpath() {
+		var p = new StringBuilder();
+		if(base != null) {
+			p.append(base.getPackage().getName().replace('.', '/'));
+		}
+		if(path != null) {
+			if(p.length() > 0)
+				p.append('/');
+			p.append(path);
+		}
+		return p.toString();
 	}
 }

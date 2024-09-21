@@ -27,6 +27,7 @@
     <modules>
         <module>boot</module>
         <module>api</module>
+        <module>config</module>
         <module>frameworks</module>
         <module>web</module>
         <module>auth</module>

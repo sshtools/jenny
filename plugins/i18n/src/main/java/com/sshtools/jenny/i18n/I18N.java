@@ -65,11 +65,11 @@ public class I18N implements Plugin {
 			});
 			
 			var buf = new StringBuilder();
-			buf.append("if(typeof i18n === 'undefined') { alert('I18N Javascript support not loaded.'); } else { i18n.bundles['");
+			buf.append("if(typeof i18n === \"undefined\") { alert(\"I18N Javascript support not loaded.\"); } else { i18n.bundles[\"");
 			buf.append(bundle.getSimpleName());
-			buf.append("'] = JSON.parse('");
-			buf.append(arrBldr.build().toString().replace("\\\"", RNDTKN).replace("\"", "\\\""));
-			buf.append("'); }");
+			buf.append("\"] = JSON.parse(\"");
+			buf.append(arrBldr.build().toString().replace("\\", "\\\\").replace("\\\"", RNDTKN).replace("\"", "\\\""));
+			buf.append("\"); }");
 			
 			tx.response("text/javascript", buf);
 		};

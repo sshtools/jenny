@@ -50,7 +50,7 @@ public final class WebModule implements NodeModel<WebModule> {
 	}
 
 	public enum Type {
-		IMPORT_MAP, CSS, JS, MODULE, IMPORTED
+		IMPORT_MAP, CSS, JS, MODULE, IMPORTED, ANCILIARY
 	}
 	
 	public enum Placement {
@@ -320,6 +320,7 @@ public final class WebModule implements NodeModel<WebModule> {
 		private List<WebModuleResource> resources = new ArrayList<>();
 		private Optional<Mount> mount = Optional.empty();
 		private Optional<ClassLoader> loader = Optional.empty();
+		private Optional<ResourceRef> prefix = Optional.empty();
 		
 		public  Builder withName(String name) {
 			this.name = Optional.of(name);
@@ -384,6 +385,15 @@ public final class WebModule implements NodeModel<WebModule> {
 			return this;
 		}
 		
+		public Builder withPrefix(String prefix) {
+			return withPrefix(new ResourceRef(prefix));
+		}
+		
+		public Builder withPrefix(ResourceRef prefix) {
+			this.prefix = Optional.of(prefix);
+			return this;
+		}
+		
 		public Builder asFile() {
 			return as(Mount.FILE);
 		}
@@ -394,6 +404,18 @@ public final class WebModule implements NodeModel<WebModule> {
 		
 		public Builder asDirectory() {
 			return as(Mount.DIRECTORY);
+		}
+		
+		public Builder asDirectory(Class<?> base) {
+			return asDirectory(new ResourceRef(base));
+		}
+		
+		public Builder asDirectory(Class<?> base, String prefix) {
+			return asDirectory(new ResourceRef(base, prefix));
+		}
+		
+		public Builder asDirectory(ResourceRef prefix) {
+			return as(Mount.DIRECTORY).withPrefix(prefix).withLoader(prefix.loader());
 		}
 		
 		public Builder as(Mount mount) {
@@ -424,10 +446,16 @@ public final class WebModule implements NodeModel<WebModule> {
 	private final Optional<Handler> handler;
 	private final Mount mount;
 	private final String uri;
+	private final Optional<ResourceRef> prefix;
 	private Optional<ClassLoader> loader;
 	
 	private WebModule(Builder builder) {
-		this.resources = Collections.unmodifiableList(new ArrayList<>(builder.resources));
+		this.prefix = builder.prefix;
+		this.loader = builder.loader;
+		this.resources = Collections.unmodifiableList(new ArrayList<>(builder.resources).stream().peek(f-> {
+			if( f.ref.loader() != null && loader.isPresent()) 
+				throw new IllegalArgumentException("Loader is set on the " +WebModuleResource.class.getName() + " , so should not be set on any " + ResourceRef.class.getName() + ".");
+		}).toList());
 		this.resources.forEach(r -> r.module = this);
 		
 		this.mount = builder.mount.orElseGet(() -> builder.uri == null ? Mount.CONTENT : builder.uri.endsWith("/") ? Mount.DIRECTORY : Mount.FILE);
@@ -465,9 +493,9 @@ public final class WebModule implements NodeModel<WebModule> {
 		this.uri = uri;
 		this.name = builder.name.orElse(this.pattern);
 		this.requires = Collections.unmodifiableSet(new LinkedHashSet<>(builder.requires));
-		this.loader = builder.loader;
 		
 		if(mount == Mount.DIRECTORY) {
+			/* TODO is this really the right condition? prefix.isPresent() maybe better */
 			if(this.loader.isPresent()) {
 				/**
 				 * Web module groups any arbitrary resource on the classpath
@@ -479,7 +507,13 @@ public final class WebModule implements NodeModel<WebModule> {
 					@Override
 					public void get(Transaction req) throws Exception {
 						var rel = req.match(0);
-						var fullPath = WebModule.this.uri.substring(1) + "/" + rel;
+						String fullPath;
+						if(prefix.isPresent()) {
+							fullPath = prefix.get().fullpath() + "/" + rel;  
+						}
+						else {
+							fullPath = WebModule.this.uri.substring(1) + "/" + rel;	
+						}
 						UHTTPD.classpathResource(loader, fullPath).get(req);
 					}
 				});
@@ -548,6 +582,10 @@ public final class WebModule implements NodeModel<WebModule> {
 				return uri + webModuleResource.ref.path();
 			}
 		}
+	}
+	
+	public Optional<ResourceRef> prefix() {
+		return prefix;
 	}
 
 	public Set<WebModule> requires() {

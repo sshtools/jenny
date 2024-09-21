@@ -19,11 +19,16 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class Lang {
+
+	public static Optional<String> emptyable(String val) {
+		return val == null || val.length() == 0 ? Optional.empty() : Optional.of(val);
+	}
 	
 	public static List<String> splitStringList(String str, String delimRegex) {
 		var arr = str.split(delimRegex);

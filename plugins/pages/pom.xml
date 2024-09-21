@@ -21,40 +21,34 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.sshtools</groupId>
-		<artifactId>jenny</artifactId>
+		<artifactId>jenny-plugins</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 		<relativePath>../</relativePath>
 	</parent>
-	<name>Jenny - Plugins</name>
-	<artifactId>jenny-plugins</artifactId>
-	<packaging>pom</packaging>
-	<modules>
-		<module>bootstrap5</module>
-		<module>i18n</module>
-		<module>plugin-manager</module>
-		<module>io</module>
-		<module>bootswatch</module>
-		<module>jobs</module>
-		<module>toast</module>
-		<module>files</module>
-		<module>alert-centre</module>
-		<module>pages</module>
-	</modules>
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>com.sshtools</groupId>
-				<artifactId>bootlace-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>generate-plugin</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>generate-plugin</goal>
-                        </goals>
-                    </execution>
-                </executions>
-			</plugin>
-		</plugins>
-	</build>
+	<name>Jenny - Pages</name>
+	<artifactId>jenny-pages</artifactId>
+	<dependencies>
+		
+		<!-- Framework Provided -->
+		<dependency>
+            <groupId>${project.groupId}</groupId>
+			<artifactId>jenny-web</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+            <groupId>${project.groupId}</groupId>
+			<artifactId>jenny-api</artifactId>
+			<version>${project.version}</version>
+			<scope>provided</scope> 
+		</dependency>
+		<dependency>
+			<groupId>com.sshtools</groupId>
+			<artifactId>bootlace-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		
+		<!-- Required -->
+		
+	</dependencies>
 </project>

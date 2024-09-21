@@ -19,12 +19,14 @@ import static com.sshtools.bootlace.api.PluginContext.$;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.Locale;
@@ -44,8 +46,12 @@ import com.sshtools.jenny.api.ApiLog;
 import com.sshtools.jenny.product.Product;
 import com.sshtools.jini.INI;
 import com.sshtools.jini.INIReader;
+import com.sshtools.jini.INIReader.MultiValueMode;
 import com.sshtools.jini.INIWriter;
 import com.sshtools.jini.config.INISet;
+import com.sshtools.jini.config.INISet.Builder;
+import com.sshtools.jini.config.Monitor;
+import com.sshtools.jini.schema.INISchema;
 
 public class Config implements Plugin {
 
@@ -53,6 +59,7 @@ public class Config implements Plugin {
 	
 	private final static Log LOG = Logs.of(ApiLog.CONFIG);
 
+	@Deprecated
 	public interface Handle extends Closeable {
 
 		INI ini();
@@ -63,6 +70,7 @@ public class Config implements Plugin {
 		void close();
 	}
 
+	@Deprecated
 	private record Key(Plugin plugin, Scope scope) {
 	}
 	
@@ -73,6 +81,8 @@ public class Config implements Plugin {
 	private URLClassLoader bundleLoader;
 	private final ResourceBundle emptyBundle;
 	private ConfigResolver configResolver;
+	private boolean developerMode = "true".equals(System.getProperty("jenny.config.developer", String.valueOf(Files.exists(Paths.get("pom.xml")))));
+	private Monitor monitor;
 
 	public Config() {
 		try {
@@ -87,6 +97,12 @@ public class Config implements Plugin {
 	@Override
 	public void afterOpen(PluginContext context) throws Exception {
 		bundleLoader = new URLClassLoader(new URL[] { configResolver.resolveDir(CONFIG_APP_ID, Scope.VENDOR).toUri().toURL() });
+		monitor = new Monitor();  
+	}
+
+	@Override
+	public void beforeClose(PluginContext context) throws Exception {
+		monitor.close();
 	}
 
 	public ResourceBundle bundle(Plugin plugin, Locale locale) {
@@ -101,11 +117,29 @@ public class Config implements Plugin {
 	}
 	
 	public INISet.Builder defaultConfig() {
-		return new INISet.Builder(product.info().app());
+		return createBuilder(product.info().app());
 	}
 	
 	public INISet.Builder configBuilder(String name) {
-		return new INISet.Builder(name).withApp(product.info().app());
+		return createBuilder(name).
+				withApp(product.info().app());
+	}
+	
+	public INISet.Builder configBuilder(String name, Class<?> schemaBase, String schemaResource) {
+		try(var rdr = new InputStreamReader(schemaBase.getResourceAsStream(schemaResource), "UTF-8")) {
+			return createBuilder(name).
+					withSchema(new INISchema.Builder().fromDocument(reader().build().read(rdr)).build()).
+					withApp(product.info().app());
+		}
+		catch(IOException ioe) {
+			throw new UncheckedIOException(ioe);
+		} catch (ParseException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	public Monitor monitor() {
+		return monitor;
 	}
 
 	@Deprecated
@@ -154,6 +188,7 @@ public class Config implements Plugin {
 		}
 	}
 
+	@Deprecated
 	private INI loadIni(Path path) {
 		if (Files.exists(path)) {
 			try {
@@ -166,5 +201,39 @@ public class Config implements Plugin {
 		} else {
 			return INI.create();
 		}
+	}
+
+	private Builder createBuilder(String name) {
+		var bldr = new INISet.Builder(name).
+                withMonitor(monitor).
+                withScopes(INISet.Scope.GLOBAL).
+                withWriteScope(INISet.Scope.GLOBAL);
+		
+		readerAndWriter(bldr);
+
+		if(developerMode) {
+            bldr.withPath(INISet.Scope.GLOBAL, Paths.get("conf"));
+		}
+		
+		return bldr;
+	}
+
+	private void readerAndWriter(Builder bldr) {
+		bldr.
+			withWriterFactory(() -> 
+		        new INIWriter.Builder().
+		        	withMultiValueMode(MultiValueMode.REPEATED_KEY).
+		        	withSectionPathSeparator('/')
+		    ).
+		    withReaderFactory(() -> 
+		        reader()
+		    );
+		
+	}
+
+	private INIReader.Builder reader() {
+		return new INIReader.Builder().
+			withMultiValueMode(MultiValueMode.REPEATED_KEY).
+			withSectionPathSeparator('/');
 	}
 }
