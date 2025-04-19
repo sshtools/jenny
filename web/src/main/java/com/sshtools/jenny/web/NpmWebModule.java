@@ -284,13 +284,13 @@ public final class NpmWebModule {
 				if(cat.contains(sel)) {
 					return sel;
 				}
-				throw new IllegalArgumentException(MessageFormat.format("Resource with path ''{0}'' does not exist with non-compressed extension ''{1}''.", path, ext));
+				throw new IllegalArgumentException(MessageFormat.format("Resource with path `{0}` does not exist with non-compressed extension `{1}`.", path, ext));
 			case MINIFY:
 				sel = base + ".min." + ext;
 				if(cat.contains(sel)) {
 					return sel;
 				}
-				throw new IllegalArgumentException(MessageFormat.format("Resource with path ''{0}'' does not exist with compressed extension ''.min.{1}''.", path, ext));
+				throw new IllegalArgumentException(MessageFormat.format("Resource with path `{0}` does not exist with compressed extension ''.min.{1}''.", path, ext));
 			default:
 				throw new UnsupportedOperationException();
 			}

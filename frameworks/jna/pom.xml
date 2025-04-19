@@ -34,7 +34,6 @@
 		<dependency>
 			<groupId>com.sshtools</groupId>
 			<artifactId>bootlace-api</artifactId>
-			<scope>provided</scope>
 		</dependency>
 
 		<!-- Required -->

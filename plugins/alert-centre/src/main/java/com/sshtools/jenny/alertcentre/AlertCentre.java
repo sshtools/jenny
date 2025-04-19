@@ -27,7 +27,6 @@ import com.sshtools.jenny.alertcentre.Notification.Builder.NotificationAction;
 import com.sshtools.jenny.alertcentre.Notification.Dismission;
 import com.sshtools.jenny.api.Resources;
 import com.sshtools.jenny.config.Config;
-import com.sshtools.jenny.product.Product;
 import com.sshtools.jenny.web.Responses;
 import com.sshtools.jenny.web.Responses.RedirectResponse;
 import com.sshtools.jenny.web.Web;
@@ -84,8 +83,9 @@ public class AlertCentre implements Plugin {
 	
 	private final Web web 						= $().plugin(Web.class);
 	private final Config config					= $().plugin(Config.class);
-	private final Product product				= $().plugin(Product.class);
 	private final List<Monitor> monitors 		= new ArrayList<>();
+	
+	private PluginContext pluginContext;
 	private AlertCentreContext context = new AlertCentreContext() {
 		
 		@Override
@@ -201,9 +201,9 @@ public class AlertCentre implements Plugin {
 
 	@Override
 	public void open(PluginContext context) {
+		this.pluginContext = context;
 		
-		var cfgBldr = config.configBuilder("alerts");
-		var alertConfig = cfgBldr.build();
+		var alertConfig = config.configBuilder("alerts").build();
 
 		context.autoClose(
 			alertConfig,
@@ -235,7 +235,7 @@ public class AlertCentre implements Plugin {
 			 */
 			dismissalDatabase.sections().values().stream().map(s -> s[0]).filter(s -> 
 				s.getEnum(Dismission.class, "dismission", Dismission.RESTART).equals(Dismission.UPGRADE) &&
-				!s.get("version", "").equals(product.info().version())
+				!s.get("version", "").equals(context.root().app().info().version())
 			).forEach(deleteAndCount);
 			
 			/*
@@ -265,7 +265,8 @@ public class AlertCentre implements Plugin {
 					}
 				});
 	
-			LOG.info("Cleared up {} stale dismissals.", counter.get());
+			if(counter.get() > 0)
+				LOG.info("Cleared up {0} stale dismissals.", counter.get());
 		}
 	}
 	
@@ -412,7 +413,7 @@ public class AlertCentre implements Plugin {
 		bldr.withUuid(alert.toUUID());
 		switch(alert.alert().dismission()) {
 		case UPGRADE:
-			bldr.withVersion(product.info().version());
+			bldr.withVersion(pluginContext.root().app().info().version());
 			break;
 		case RESTART:
 			bldr.withServerStart(SERVER_STARTED);

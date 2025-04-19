@@ -30,12 +30,10 @@
 	<packaging>pom</packaging>
 	<modules>
 		<module>logging</module>
-		<module>events</module>
 		<module>jna</module>
 		<module>dbus</module>
 		<module>tty</module>
-		<module>vfs</module>
 		<module>tunnels</module>
-        <module>product</module>
+        <module>config</module>
 	</modules>
 </project>

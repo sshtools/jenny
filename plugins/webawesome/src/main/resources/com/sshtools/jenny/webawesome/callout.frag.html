@@ -1,0 +1,12 @@
+<html lang="en" xmlns:t="https://jadaptive.com/t">
+<t:instruct reset />
+<wa-callout variant="${variant}">
+	<t:if icon>
+  		<wa-icon slot="icon" name="${icon}" variant="${icon-variant}"></wa-icon>
+  	</t:if>
+  <strong>${text}</strong>
+  <t:if detail>
+	  <br />
+	  You can tell by how pretty the callout is.
+  </t:if>
+</wa-callout>

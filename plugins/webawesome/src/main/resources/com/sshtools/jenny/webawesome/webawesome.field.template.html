@@ -1,0 +1,40 @@
+<html lang="en" xmlns:t="https://jadaptive.com/t">
+<t:instruct reset/>
+<t:if label>
+    <t:if label.floating>
+        <t:if input.group>
+            <div class="form-floating ${feedback:+has-validation}">
+                <t:include input/>
+                <label for="${input.id}" class="${label.class}">${label}</label>
+            </div>
+        <t:else/>
+            <div class="form-floating">
+                <t:include input/>
+                <label for="${input.id}" class="${label.class}">${label}</label>
+            </div>
+        </t:if>
+	<t:else/>
+        <t:if input.group>
+            <div class="${feedback:+has-validation}">
+                <t:include input/>
+            </div>
+        <t:else/>
+            <t:if options>
+            	<fieldset id="form-group-${input.id}-options" class="${options.class}">
+	            	<t:list options>
+	            		<t:include option/>
+	            	</t:list>
+            	</fieldset>
+            <t:else/>
+            	<t:include input/>
+            </t:if>
+        </t:if>
+	</t:if>
+<t:else/>
+    <t:include input/>
+</t:if>
+<t:if feedback>
+    <div id="${id}Feedback" class="${feedback}">
+        ${feedback.text}
+    </div>
+</t:if>

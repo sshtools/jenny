@@ -285,10 +285,18 @@ public final class WebModule implements NodeModel<WebModule> {
 			return type.orElseGet(() -> {
 				if (ref == null) {
 					throw new IllegalStateException(MessageFormat.format(
-							"A web module resource backed by a ''{0}'' must have a specific ''{1}''.",
+							"A web module resource backed by a `{0}` must have a specific `{1}`.",
 							Handler.class.getName(), Type.class.getName()));
 				} else {
-					return ref.path().toLowerCase().endsWith(".js") ? Type.JS : Type.CSS;
+					if(ref.path().toLowerCase().endsWith(".js")) {
+						return Type.JS;
+					}
+					else if(ref.path().toLowerCase().endsWith(".css")) {
+						return Type.CSS;
+					}
+					else  {
+						return Type.ANCILIARY;
+					}
 				}
 			});
 		}
@@ -461,7 +469,7 @@ public final class WebModule implements NodeModel<WebModule> {
 		this.mount = builder.mount.orElseGet(() -> builder.uri == null ? Mount.CONTENT : builder.uri.endsWith("/") ? Mount.DIRECTORY : Mount.FILE);
 		
 		if(mount == Mount.FILE && resources.size() != 1) {
-			throw new IllegalStateException(MessageFormat.format("Mount ''{0}'' must specify exactly on resource to map to, there are {1}", Mount.FILE, resources.size()));
+			throw new IllegalStateException(MessageFormat.format("Mount `{0}` must specify exactly on resource to map to, there are {1}", Mount.FILE, resources.size()));
 		}
 		
 		var uri = builder.uri;

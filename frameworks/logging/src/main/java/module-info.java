@@ -17,9 +17,9 @@ import com.sshtools.bootlace.api.Plugin;
 import com.sshtools.jenny.logging.Logging;
 
 module com.sshtools.jenny.logging {
+	exports com.sshtools.jenny.logging;
 	requires java.logging;
 	requires com.sshtools.bootlace.api;
-	requires org.slf4j.jul;
 	requires org.slf4j;
 	
 	provides Plugin with Logging;

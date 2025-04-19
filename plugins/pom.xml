@@ -29,16 +29,23 @@
 	<artifactId>jenny-plugins</artifactId>
 	<packaging>pom</packaging>
 	<modules>
+		<module>vfs</module>
+		<module>events</module>
 		<module>bootstrap5</module>
+		<module>webawesome</module>
 		<module>i18n</module>
 		<module>plugin-manager</module>
 		<module>io</module>
 		<module>bootswatch</module>
 		<module>jobs</module>
 		<module>toast</module>
+        <module>messaging</module>
+		<module>mail</module>
 		<module>files</module>
 		<module>alert-centre</module>
 		<module>pages</module>
+		<module>avatars</module>
+		<module>gravatar</module>
 	</modules>
 	<build>
 		<plugins>

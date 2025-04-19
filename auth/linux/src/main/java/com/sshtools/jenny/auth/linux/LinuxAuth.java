@@ -26,10 +26,10 @@ import org.jvnet.libpam.PAMException;
 import com.sshtools.bootlace.api.Plugin;
 import com.sshtools.bootlace.api.PluginContext;
 import com.sshtools.jenny.api.Api;
+import com.sshtools.jenny.api.ExtendedUserPrincipal;
 import com.sshtools.jenny.auth.api.Auth.AuthResult;
 import com.sshtools.jenny.auth.api.Auth.AuthState;
 import com.sshtools.jenny.auth.api.Auth.PasswordAuthProvider;
-import com.sshtools.jenny.auth.api.ExtendedUserPrincipal;
 
 public class LinuxAuth implements Plugin {
 

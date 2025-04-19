@@ -18,6 +18,7 @@ package com.sshtools.jenny.web;
 import com.sshtools.jenny.api.XPoint;
 import com.sshtools.tinytemplate.Templates.TemplateModel;
 
+@FunctionalInterface
 public interface GlobalTemplateDecorator extends XPoint {
 	void decorate(TemplateModel model);
 	

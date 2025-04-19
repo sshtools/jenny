@@ -40,7 +40,6 @@ import java.util.concurrent.ThreadFactory;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 
-import com.sshtools.bootlace.api.ConfigResolver.Scope;
 import com.sshtools.bootlace.api.DependencyGraph;
 import com.sshtools.bootlace.api.Logs;
 import com.sshtools.bootlace.api.Logs.Log;
@@ -141,13 +140,8 @@ public final class Web implements Plugin {
 		router = new RouterBuilder().
 				build();
 		
-		if(Boolean.getBoolean("jenny.newConfig")) {
 			configSet = config.configBuilder("web", Web.class, "Web.schema.ini").
 					build();
-		} 
-		else {
-			configSet = null;
-		}
 	}
 	
 	public Closeable global(WebModule... modules) {
@@ -284,7 +278,7 @@ public final class Web implements Plugin {
 	
 	public TemplateModel template(Class<?> parent, String relPath) {
 		if(LOG.debug()) {
-			LOG.debug("Loading template ''{0}'' with ''{1}'' as the base. The classloader is {2}", relPath, parent.getName(), parent.getClassLoader());
+			LOG.debug("Loading template `{0}` with `{1}` as the base. The classloader is {2}", relPath, parent.getName(), parent.getClassLoader());
 		}
 		return decorateTemplate(Transaction.get(), TemplateModel.ofResource(parent, relPath));
 	}
@@ -295,7 +289,7 @@ public final class Web implements Plugin {
 	
 	public TemplateModel template(String path, ClassLoader loader) {
 		if(LOG.debug()) {
-			LOG.debug("Loading template ''{0}'' with classloader is {1}", path, loader);
+			LOG.debug("Loading template `{0}` with classloader is {1}", path, loader);
 		}
 		
 		return decorateTemplate(Transaction.get(), TemplateModel.ofResource(path, loader));
@@ -374,14 +368,7 @@ public final class Web implements Plugin {
 	}
 
 	private INI getWebConfig() {
-		if(configSet == null) {
-			var config = PluginContext.$().plugin(Config.class);
-			var webConfig = config.config(this, Scope.SYSTEM);
-			return webConfig.ini();
-		}
-		else {
-			return configSet.document();
-		}
+		return configSet.document();
 	}
 	
 	private List<TemplateModel> cssModules(Transaction tx, String content, Placement placement) {

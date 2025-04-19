@@ -17,19 +17,21 @@ package com.sshtools.jenny.auth.linux;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 
 import com.sshtools.bootlace.api.Plugin;
 import com.sshtools.bootlace.api.PluginContext;
 import com.sshtools.jenny.api.Api;
+import com.sshtools.jenny.api.ExtendedUserPrincipal;
 import com.sshtools.jenny.auth.api.Auth.AuthResult;
 import com.sshtools.jenny.auth.api.Auth.AuthState;
 import com.sshtools.jenny.auth.api.Auth.PasswordAuthProvider;
-import com.sshtools.jenny.auth.api.ExtendedUserPrincipal;
 
-import uk.co.bitatch.linid.Linid;
-import uk.co.bitatch.linid.LinuxUserId;
+import uk.co.bithatch.linid.Linid;
+import uk.co.bithatch.linid.LinuxUserId;
 
 public class LinidAuth implements Plugin {
 
@@ -39,40 +41,59 @@ public class LinidAuth implements Plugin {
 			return Linid.get().authenticate(username, password).map(id -> {
 				var linId = (LinuxUserId)id;
 				return new AuthResult(AuthState.COMPLETE, new ExtendedUserPrincipal.LinuxUser() {
+
+					private String name;
+					private Optional<String> shell;
+					private int uid;
+					private Set<String> groups;
+					private int gid;
+					private Optional<String> gecos;
+					private Optional<Path> dir;
+
+					{
+						name = id.getName();
+						shell = Optional.of(linId.shell());
+						uid = linId.uid();
+						groups = new LinkedHashSet<>(Arrays.asList(linId.collectionNames()));
+						gid = linId.gid();
+						gecos = Optional.of(String.join(",", linId.gecos()));
+						dir = Optional.of(linId.home()).map(Paths::get);
+					}
+					
 					
 					@Override
 					public String getName() {
-						return id.getName();
+						return name;
 					}
 
 					@Override
 					public int uid() {
-						return linId.uid();
+						return uid;
 					}
 
 					@Override
 					public Optional<String> shell() {
-						return Optional.of(linId.shell());
+						return shell;
 					}
 
 					@Override
 					public Set<String> groups() {
-						return Set.of(linId.collectionNames());
+						return groups;
 					}
 
 					@Override
 					public int gid() {
-						return linId.gid();
+						return gid;
 					}
 
 					@Override
 					public Optional<String> gecos() {
-						return Optional.of(String.join(",", linId.gecos()));
+						return gecos;
 					}
 
 					@Override
 					public Optional<Path> dir() {
-						return Optional.of(linId.home()).map(Paths::get);
+						return dir;
 					}
 				});
 			}).orElseGet(() -> new AuthResult(AuthState.DENY));
@@ -93,8 +114,7 @@ public class LinidAuth implements Plugin {
 		var provider = new Provider();
 
 		context.autoClose(api.extensions().
-				group().
-					point(PasswordAuthProvider.class, (a) -> provider));
+				group().point(PasswordAuthProvider.class, (a) -> provider));
 	}
 
 }

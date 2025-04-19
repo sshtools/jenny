@@ -34,36 +34,21 @@
             <groupId>${project.groupId}</groupId>
 			<artifactId>jenny-web</artifactId>
 			<version>${project.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-            <groupId>${project.groupId}</groupId>
-			<artifactId>jenny-api</artifactId>
-			<version>${project.version}</version>
-			<scope>provided</scope> 
-		</dependency>
-		<dependency>
-			<groupId>com.sshtools</groupId>
-			<artifactId>bootlace-api</artifactId>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
             <groupId>${project.groupId}</groupId>
 			<artifactId>jenny-vfs</artifactId>
 			<version>${project.version}</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
             <groupId>${project.groupId}</groupId>
 			<artifactId>jenny-i18n</artifactId>
 			<version>${project.version}</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
             <groupId>${project.groupId}</groupId>
 			<artifactId>jenny-bootstrap5</artifactId>
 			<version>${project.version}</version>
-			<scope>provided</scope> 
 		</dependency>
 		
 		<!-- Required -->

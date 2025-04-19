@@ -2,3 +2,7 @@
 **/.project
 **/.classpath
 **/target
+/boot/conf/
+/boot/extensions/
+/boot/logs/
+/boot/tmp/

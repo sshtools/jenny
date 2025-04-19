@@ -1,0 +1,14 @@
+<html lang="en" xmlns:t="https://jadaptive.com/t">
+<t:instruct reset />
+<t:list items>
+	<wa-callout variant="${variant}" class="mt-3 mb-3">
+		<t:if icon>
+			<wa-icon slot="icon" name="${icon}" variant="${iconVariant}"></wa-icon>
+		</t:if>
+		<strong>${title}</strong>
+		<t:if description>
+			<br/>
+			${description}
+		</t:if>
+	</wa-callout>
+</t:list>

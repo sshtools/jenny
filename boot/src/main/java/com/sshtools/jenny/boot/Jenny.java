@@ -28,9 +28,11 @@ import org.jline.terminal.TerminalBuilder;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 
+import com.sshtools.bootlace.api.ArtifactVersion;
 import com.sshtools.bootlace.api.BootContext;
 import com.sshtools.bootlace.api.ChildLayer;
 import com.sshtools.bootlace.api.GAV;
+import com.sshtools.bootlace.api.PluginContext.PluginHostInfo;
 import com.sshtools.bootlace.api.Repository;
 import com.sshtools.bootlace.api.ResolutionMonitor;
 import com.sshtools.bootlace.platform.Bootlace;
@@ -85,9 +87,9 @@ public class Jenny {
   `-..-'       `'-..-'  '--'    '--''--'    '--'  `-..-'       
 				""");
 		
-		var jenny = Bootlace.build().
+		var jenny = Bootlace.build(new PluginHostInfo("jenny", ArtifactVersion.getVersion("com.sshtools", "jenny-boot"), "Jenny")).
 			fromStandardArguments(args).
-			withContext(BootContext.named("Jenny")).
+			withContext(BootContext.named("jenny")).
 			withMonitor(createMonitor()).
 			build();
 		

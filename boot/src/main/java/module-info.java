@@ -17,6 +17,7 @@ open module com.sshtools.jenny.boot {
 	exports com.sshtools.jenny.boot;
 	
 //	requires layrry.core;
+	requires com.sshtools.bootlace.api;
 	requires com.sshtools.bootlace.platform;
 	requires org.jline;
 	requires progressbar;

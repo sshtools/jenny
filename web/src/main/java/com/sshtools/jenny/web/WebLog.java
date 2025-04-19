@@ -21,7 +21,7 @@ import com.sshtools.bootlace.api.Logs;
 import com.sshtools.bootlace.api.Logs.Log;
 
 public enum WebLog implements Logs.Category {
-	WEB, JOBS, ALERTS, TEMPLATES;
+	WEB, JOBS, ALERTS, TEMPLATES, USERS;
 	
 	
 	private final static Log JOB_LOG = Logs.of(WebLog.JOBS);

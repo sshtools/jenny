@@ -35,6 +35,7 @@ public class XPoints {
 
 	@FunctionalInterface
 	public interface XPointRef<INPUT, OUTPUT> extends Function<INPUT, OUTPUT> {
+		/* TODO having this extend Function was a terrible idea */
 	}
 	
 	public final static class XPointGroup implements Closeable {
@@ -57,7 +58,7 @@ public class XPoints {
 				}
 			}
 			l.add(point);
-			LOG.info("Registered extension point ''{0}'' of type ''{1}'' (now {2} registered)", point.getClass().getName(), clazz.getName(), l.size());
+			LOG.info("Registered extension point `{0}` of type `{1}` (now {2} registered)", point.getClass().getName(), clazz.getName(), l.size());
 			return this;
 		}
 		
@@ -91,11 +92,11 @@ public class XPoints {
 		groups.forEach(grp -> l.addAll(grp.points(clazz)));
 		Collections.sort(l, (o1, o2) -> {
 			var v1 = 0;
-			if(o1 instanceof WeightedXPoint wp) {
+			if(o1.apply(null) instanceof WeightedXPoint wp) {
 				v1 = wp.weight();
 			}
 			var v2 = 0;
-			if(o2 instanceof WeightedXPoint wp) {
+			if(o2.apply(null) instanceof WeightedXPoint wp) {
 				v2 = wp.weight();
 			}
 			return Integer.compare(v1, v2);

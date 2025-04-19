@@ -1,0 +1,52 @@
+<html lang="en" xmlns:t="https://jadaptive.com/t">
+<t:instruct reset/>
+<t:if input.hidden>
+	<input type="hidden" name="${name}" id="${id}" value="${value}" ${attrs} />
+<t:else/>
+	<t:if input.group.before>
+	     <span class="input-group-text" id="${id}-inputGroup">${input.group.before}</span>
+	</t:if>
+	<t:if is.switch>
+   		<wa-switch name="${name}" id="${id}" type="${type}" class="${class}" ${attrs} ${checked:+checked} ${required:+required} ${multiple:+multiple}  ${disabled:+disabled} ${readonly:+readonly}>
+   			${label}
+			<t:if help><wa-slot slot="hint">${help}</wa-slot></t:if>
+   		</wa-switch>
+	<t:else/>
+		<t:if input>
+			<t:if help>
+		   		<wa-input label="${label}" name="${name}" id="${id}" type="${type}" class="${class}" ${attrs} ${checked:+checked} ${required:+required} ${multiple:+multiple}  ${disabled:+disabled} ${readonly:+readonly}>
+			    	<t:if input.group.before>
+			    		<div slot="prefix">
+			    			<t:include input.group.before/>
+			    		</div>
+			    	</t:if>
+			    	<t:if input.group.after>
+			    		<div slot="suffix">
+			    			<t:include input.group.after/>
+			    		</div>
+			    	</t:if>
+					<wa-slot slot="hint">${help}</wa-slot>
+		   		</wa-input>
+		   	<t:else/>
+		   		<wa-input label="${label}" name="${name}" id="${id}" type="${type}" class="${class}" ${attrs} ${checked:+checked} ${required:+required} ${multiple:+multiple}  ${disabled:+disabled} ${readonly:+readonly}></wa-input>
+		   	</t:if>
+		</t:if>
+	</t:if>
+	<t:if select>	
+		<wa-select max-options-visible="10" name="${name}" id="${id}" class="h-50 ${class}" value="${value}" ${attrs} ${readonly:+readonly} ${disabled:+disabled} ${multiple:+multiple}>
+		  <t:list options>
+		    <wa-option value="${value}">${text}</wa-option>
+		  </t:list>
+		  <t:if help><wa-slot slot="hint">${help}</wa-slot></t:if>
+		</wa-select>
+	</t:if>
+	<t:if textarea>
+	    <wa-textarea hint="${help}" name="${name}" value="${value}" id="${id}" class="${class}" ${attrs} ${readonly:+readonly} ${required:+required} ${multiple:+multiple} ${disabled:+disabled}>
+	    	${value}
+	  		<t:if help><wa-slot slot="hint">${help}</wa-slot></t:if>
+	    </wa-textarea>
+	</t:if>
+	<t:if input.group.after>
+	     <span class="input-group-text" id="${id}-inputGroup">${input.group.after}</span>
+	</t:if>
+</t:if>

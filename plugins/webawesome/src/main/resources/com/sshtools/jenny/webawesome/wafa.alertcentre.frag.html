@@ -1,0 +1,48 @@
+<html lang="en" xmlns:t="https://jadaptive.com/t">
+<t:instruct reset />
+<t:list types>
+	<wa-icon-button class="popup-trigger-${type}" data-popup-trigger="popup-${type}" name="${icon}" variant="${icon-variant}"></wa-icon-button>
+	<div class="notification-popup">
+		<wa-popup class="popup" id="popup-${type}" data-popup-type="${type}" placement="bottom" arrow arrow-placement="anchor" distance="8">
+			<span slot="anchor"></span>
+			<div class="box p-3"> 
+				<t:list alerts>
+					<t:if not _first>
+						<wa-divider></wa-divider>
+					</t:if>
+					<div>
+						<div class="appearance-${type-text-style} d-flex align-items-center column-gap-3">
+							<t:if any-icon>
+								<wa-icon  appearance="${type-text-style}" slot="icon" name="${any-icon}" variant="${iconVariant}"></wa-icon>
+							</t:if>
+							<div class="flex-grow-1">
+								<strong>${title}</strong>
+							</div>
+						</div>
+						<t:if content>
+							<div class="mt-3 unimportant">
+								${content}
+							</div>
+						</t:if>
+						<t:if actions>
+							<div class="mt-3 d-flex align-items-center column-gap-3">
+								<t:list actions>
+									<t:if classes>
+										<wa-button data-action-uri="${uri}" class="notification-action" variant="${classes}">
+											<t:if icon>
+												<wa-icon slot="prefix" name="${icon}" variant="${icon-variant}"></wa-icon>
+											</t:if>
+											${text}
+										</wa-button>
+									<t:else/>
+										<a class="notification-action" data-action-uri="${uri}" href="#">${text}</a>
+									</t:if>
+								</t:list>
+							</div>
+						</t:if>
+					</div>
+				</t:list> 
+			</div>
+		</wa-popup>
+	</div>
+</t:list>

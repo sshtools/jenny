@@ -39,4 +39,24 @@ public class Words {
 		}
 		return b.toString();
 	}
+	
+	public static String capitalize(String str) {
+		if (str == null || str.length() == 0) {
+			return str;
+		}
+		var buffer = new StringBuilder(str.length());
+		var cap = true;
+		for (var ch : str.toCharArray()) {
+			if (Character.isWhitespace(ch)) {
+				buffer.append(ch);
+				cap = true;
+			} else if (cap) {
+				buffer.append(Character.toTitleCase(ch));
+				cap = false;
+			} else {
+				buffer.append(ch);
+			}
+		}
+		return buffer.toString();
+	}
 }

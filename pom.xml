@@ -25,13 +25,13 @@
     <packaging>pom</packaging>
     <name>Jenny - Lightweight Web Framework</name>
     <modules>
-        <module>boot</module>
         <module>api</module>
-        <module>config</module>
         <module>frameworks</module>
         <module>web</module>
         <module>auth</module>
         <module>plugins</module>
+        <module>boot</module>
+        <module>standalone-starter</module>
         <module>package</module>
     </modules>
     <properties>
@@ -123,12 +123,27 @@
             <dependency>
                 <groupId>com.sshtools</groupId>
                 <artifactId>uhttpd</artifactId>
-                <version>0.9.10-SNAPSHOT</version>
+                <version>0.9.11-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>com.sshtools</groupId>
                 <artifactId>tinytemplate</artifactId>
                 <version>1.0.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sshtools</groupId>
+                <artifactId>jini-lib</artifactId>
+                <version>0.4.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sshtools</groupId>
+                <artifactId>jini-config</artifactId>
+                <version>0.4.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>com.sshtools</groupId>
+                <artifactId>jini-schema</artifactId>
+                <version>0.4.1-SNAPSHOT</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -223,7 +238,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.12.1</version>
+                    <version>3.13.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

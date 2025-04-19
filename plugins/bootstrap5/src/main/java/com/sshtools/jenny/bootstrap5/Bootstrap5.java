@@ -39,7 +39,7 @@ public class Bootstrap5 implements Plugin {
 			 	withMain("js/jquery.treegrid.min.js").
 			 	withGAV(GAV.ofSpec("npm:jquery-treegrid")).
 			 	withRequires(MODULE_JQUERY).
-			 	addResources(WebModuleResource.css(Bootstrap5.class, "css/jquery.treegrid.css")).
+			 	addResources(WebModuleResource.css("css/jquery.treegrid.css")).
 			 	build();
 	
 	public final static WebModule MODULE_BOOTSTRAP5 = new NpmWebModule.Builder().

@@ -34,19 +34,17 @@
             <groupId>${project.groupId}</groupId>
 			<artifactId>jenny-web</artifactId>
 			<version>${project.version}</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>jenny-api</artifactId>
 			<version>${project.version}</version>
-			<scope>provided</scope> 
 		</dependency>
-		<dependency>
-			<groupId>com.sshtools</groupId>
-			<artifactId>bootlace-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>jenny-config</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.sshtools</groupId>
             <artifactId>tinytemplate-bootstrap-forms</artifactId>
