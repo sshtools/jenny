@@ -133,17 +133,17 @@
             <dependency>
                 <groupId>com.sshtools</groupId>
                 <artifactId>jini-lib</artifactId>
-                <version>0.4.1-SNAPSHOT</version>
+                <version>0.5.0</version>
             </dependency>
             <dependency>
                 <groupId>com.sshtools</groupId>
                 <artifactId>jini-config</artifactId>
-                <version>0.4.1-SNAPSHOT</version>
+                <version>0.5.0</version>
             </dependency>
             <dependency>
                 <groupId>com.sshtools</groupId>
                 <artifactId>jini-schema</artifactId>
-                <version>0.4.1-SNAPSHOT</version>
+                <version>0.5.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

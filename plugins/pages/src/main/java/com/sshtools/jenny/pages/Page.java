@@ -9,9 +9,9 @@ import java.util.function.Supplier;
 import com.sshtools.tinytemplate.Templates.TemplateModel;
 import com.sshtools.uhttpd.UHTTPD.Transaction;
 
-public final class Page implements Closeable {
+public final class Page extends El implements Closeable {
 
-	public final static class Builder {
+	public final static class Builder extends ElBuilder<Builder, Page> {
 		private Optional<String> contentType = Optional.empty();
 		private Optional<String> uri = Optional.empty();
 		private Optional<Runnable> onClose = Optional.empty();
@@ -51,6 +51,11 @@ public final class Page implements Closeable {
 			this.onClose = Optional.of(onClose);
 			return this;
 		}
+
+		@Override
+		public Page build() {
+			return new Page(this);
+		}
 	}
 	
 	private final Optional<String> contentType;
@@ -59,6 +64,7 @@ public final class Page implements Closeable {
 	private final String uri;
 	
 	private Page(Builder bldr) {
+		super(bldr);
 		this.contentType = bldr.contentType;
 		this.content = bldr.content;
 		this.onClose = bldr.onClose;

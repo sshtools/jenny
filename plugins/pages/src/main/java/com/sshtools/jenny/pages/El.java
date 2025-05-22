@@ -1,20 +1,17 @@
 package com.sshtools.jenny.pages;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
+import java.util.function.Supplier;
 
 public abstract class El {
 
 	protected static abstract class ElBuilder<BLDR extends ElBuilder<BLDR, EL>, EL extends El> {
 		
 		private Optional<String> id = Optional.empty();
-		private Set<Div> children = new LinkedHashSet<>();
+		private Supplier<Collection<Div>> children = () -> Collections.emptyList();
 		
 		@SuppressWarnings("unchecked")
 		public BLDR id(String id) {
@@ -27,17 +24,12 @@ public abstract class El {
 		}
 		
 		public BLDR children(Collection<Div> children) {
-			this.children.clear();
-			return addChildren(children);
+			return children(() -> children);
 		}
-		
-		public BLDR addChildren(Div... children) {
-			return addChildren(Arrays.asList(children));
-		}
-		
+
 		@SuppressWarnings("unchecked")
-		public BLDR addChildren(Collection<Div> children) {
-			this.children.addAll(children);
+		public BLDR children(Supplier<Collection<Div>> children) {
+			this.children = children;
 			return (BLDR)this;
 		}
 
@@ -45,14 +37,14 @@ public abstract class El {
 	}
 
 	protected final Optional<String> id;
-	protected final List<Div> children;
+	protected final Supplier<Collection<Div>> children;
 	
 	protected El(ElBuilder<?, ? extends El> bldr) {
 		this.id = bldr.id;
-		this.children = Collections.unmodifiableList(new ArrayList<>(bldr.children));
+		this.children = bldr.children;
 	}
 	
-	public List<Div> children() {
+	public Supplier<Collection<Div>> children() {
 		return children;
 	}
 	
