@@ -50,11 +50,11 @@ import com.sshtools.tinytemplate.Templates.TemplateModel;
 import com.sshtools.tinytemplate.bootstrap.forms.Field;
 import com.sshtools.tinytemplate.bootstrap.forms.Form;
 import com.sshtools.tinytemplate.bootstrap.forms.Form.Icon;
-import com.sshtools.uhttpd.UHTTPD.Transaction;
 import com.sshtools.tinytemplate.bootstrap.forms.Framework;
 import com.sshtools.tinytemplate.bootstrap.forms.InputType;
 import com.sshtools.tinytemplate.bootstrap.forms.Template;
 import com.sshtools.tinytemplate.bootstrap.forms.TemplateResource;
+import com.sshtools.uhttpd.UHTTPD.Transaction;
 
 public class WebAwesome implements Plugin {
 
@@ -118,6 +118,16 @@ public class WebAwesome implements Plugin {
 	private final static WebModule FONTAWESOME_MODULE = new WebModule.Builder().withUri("fontawesome/")
 			.asDirectory(WebAwesome.class, "fontawesome-pro-6.4.0-web")
 			.withResources(WebModuleResource.of("css/all.css")).build();
+	
+
+	
+//	public final static WebModule MODULE_BOOTSTRAP_TABLE = new NpmWebModule.Builder().
+//			withMain("dist/bootstrap-table.min.js").
+//			withType(Type.JS).
+//			withGAV(ofSpec("npm:bootstrap-table")).
+//			withClass(Bootstrap5.class).
+//			withRequires(MODULE_BOOTSTRAP5).
+//			build();
 
 	public final static WebModule MODULE = new WebModule.Builder()
 			.withUrl("https://early.webawesome.com/webawesome@3.0.0-alpha.11/dist").withRequires(FONTAWESOME_MODULE)

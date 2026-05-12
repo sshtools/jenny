@@ -18,7 +18,7 @@
 	</parent>
 	<properties>
 		<jenny.starter.main>com.sshtools.jenny.standalone.starter.DefaultStarter</jenny.starter.main>
-		<picocli.version>4.7.5</picocli.version>
+		<picocli.version>4.7.7</picocli.version>
 	</properties>
 	<artifactId>jenny-standalone-starter</artifactId>
 	<name>Jenny - Standalone Starter</name>
@@ -46,7 +46,7 @@
 		<dependency>
 			<groupId>com.sshtools</groupId>
 			<artifactId>slf4j-tty</artifactId>
-			<version>0.0.4-SNAPSHOT</version>
+			<version>0.0.6</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.slf4j</groupId>

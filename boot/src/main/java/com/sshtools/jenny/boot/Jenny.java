@@ -32,6 +32,7 @@ import com.sshtools.bootlace.api.ArtifactVersion;
 import com.sshtools.bootlace.api.BootContext;
 import com.sshtools.bootlace.api.ChildLayer;
 import com.sshtools.bootlace.api.GAV;
+import com.sshtools.bootlace.api.LocalLayer;
 import com.sshtools.bootlace.api.PluginContext.PluginHostInfo;
 import com.sshtools.bootlace.api.Repository;
 import com.sshtools.bootlace.api.ResolutionMonitor;
@@ -104,7 +105,7 @@ public class Jenny {
 		new AttributedStringBuilder().
 				append("\nDrop plugins into ").
 				style(S.bold()).
-				append((((ExtensionLayerImpl)plugins).path().toAbsolutePath().toString())).
+				append((((LocalLayer)plugins).directory().toAbsolutePath().toString())).
 				style(S.boldOff()).
 				println(terminal);
 		

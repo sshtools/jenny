@@ -46,12 +46,12 @@
 		<dependency>
 			<groupId>com.github.hypfvieh</groupId>
 			<artifactId>dbus-java-core</artifactId>
-			<version>5.0.1-SNAPSHOT</version>
-		</dependency>
+			<version>5.2.0</version> 
+		</dependency> 
 		<dependency>
 			<groupId>com.github.hypfvieh</groupId>
 			<artifactId>dbus-java-transport-native-unixsocket</artifactId>
-            <version>5.0.1-SNAPSHOT</version>
+            <version>5.2.0</version> 
 		</dependency>
 
 

@@ -66,7 +66,19 @@
                 </exclusion>
             </exclusions>
         </dependency>
-		
+        <!--<dependency>
+		    <groupId>npm.awesome.me</groupId>
+		    <artifactId>webawesome</artifactId>
+		    <version>3.1.0</version>
+		</dependency>
+		-->
 		<!-- NPM -->
 	</dependencies>
+	<repositories>
+		<repository>
+		    <id>npm2mvn</id>
+		    <url>https://npm2mvn.jadaptive.com</url>
+		</repository>
+	</repositories>
+
 </project>

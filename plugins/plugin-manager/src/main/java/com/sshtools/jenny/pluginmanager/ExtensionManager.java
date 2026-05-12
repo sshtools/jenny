@@ -28,12 +28,13 @@ import java.util.ArrayList;
 import javax.json.Json;
 import javax.json.JsonValue;
 
+import com.sshtools.bootlace.api.DefaultLayer;
 import com.sshtools.bootlace.api.ExtensionLayer;
 import com.sshtools.bootlace.api.FilesAndFolders;
 import com.sshtools.bootlace.api.Http;
+import com.sshtools.bootlace.api.LocalLayer;
 import com.sshtools.bootlace.api.Plugin;
 import com.sshtools.bootlace.api.PluginContext;
-import com.sshtools.bootlace.api.PluginLayer;
 import com.sshtools.jenny.bootstrap5.Bootstrap5;
 import com.sshtools.jenny.i18n.I18N;
 import com.sshtools.jenny.web.Web;
@@ -47,7 +48,7 @@ public class ExtensionManager implements Plugin {
 	
 	private Web web;
 	private I18N i18n;
-	private ExtensionLayer pluginsLayer;
+	private LocalLayer pluginsLayer;
 	private WebModulesRef maangerModulesRef;
 	private WebModulesRef installModulesRef;
 	
@@ -88,12 +89,12 @@ public class ExtensionManager implements Plugin {
 					handle("/extension-search", this::actionSearch).
 				build());
 		
-		pluginsLayer = (ExtensionLayer)context.layer("extensions").orElseThrow(() -> new IllegalStateException("Could not find extensions layer"));
+		pluginsLayer = (LocalLayer)context.layer("extensions").orElseThrow(() -> new IllegalStateException("Could not find extensions layer"));
 	}
 
 	public TemplateModel fragExtensions() {
 		var plugins = new ArrayList<String>();
-		var path = pluginsLayer.path();
+		var path = pluginsLayer.writeDirectory();
 		try(var str = Files.newDirectoryStream(path, f -> Files.isDirectory(f))) {
 			for(var dir : str) {
 				plugins.add(dir.getFileName().toString());
@@ -170,7 +171,7 @@ public class ExtensionManager implements Plugin {
 		var arrBldr = Json.createArrayBuilder();
 		
 		pluginsLayer.extensions().stream().forEach(a -> {
-			var player =  (PluginLayer)a;
+			var player =  (DefaultLayer)a;
 			var primary = player.artifacts().iterator().next();
 			arrBldr.add(Json.createObjectBuilder().
 					add("id", a.id()).
@@ -195,7 +196,7 @@ public class ExtensionManager implements Plugin {
 				// Check exists to prevent shenanigans
 				pluginsLayer.extension(extid).get();
 				
-				var path = pluginsLayer.path().resolve(extid);
+				var path = pluginsLayer.writeDirectory().resolve(extid);
 				FilesAndFolders.recursiveDelete(path);
 			}
 		}
@@ -210,8 +211,8 @@ public class ExtensionManager implements Plugin {
 			if(part instanceof FormData fd) {
 				switch(part.name()) {
 				case "file":
-					extensionTempFile = pluginsLayer.path().resolve(fd.filename().map(fn -> fn + ".tmp").orElse("extension.zip.tmp")) ;
-					extensionFile = pluginsLayer.path().resolve(fd.filename().map(fn -> fn).orElse("extension.zip")) ;
+					extensionTempFile = pluginsLayer.writeDirectory().resolve(fd.filename().map(fn -> fn + ".tmp").orElse("extension.zip.tmp")) ;
+					extensionFile = pluginsLayer.writeDirectory().resolve(fd.filename().map(fn -> fn).orElse("extension.zip")) ;
 					try(var in = part.asStream()) {
 						try(var out = Files.newOutputStream(extensionTempFile)) {
 							in.transferTo(out);

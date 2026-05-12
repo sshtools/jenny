@@ -123,27 +123,27 @@
             <dependency>
                 <groupId>com.sshtools</groupId>
                 <artifactId>uhttpd</artifactId>
-                <version>0.9.11-SNAPSHOT</version>
+                <version>0.9.11</version>
             </dependency>
             <dependency>
                 <groupId>com.sshtools</groupId>
                 <artifactId>tinytemplate</artifactId>
-                <version>1.0.0-SNAPSHOT</version>
+                <version>1.0.1</version>
             </dependency>
             <dependency>
                 <groupId>com.sshtools</groupId>
                 <artifactId>jini-lib</artifactId>
-                <version>0.5.0</version>
+                <version>0.6.2</version>
             </dependency>
             <dependency>
                 <groupId>com.sshtools</groupId>
                 <artifactId>jini-config</artifactId>
-                <version>0.5.0</version>
+                <version>0.6.2</version>
             </dependency>
             <dependency>
                 <groupId>com.sshtools</groupId>
                 <artifactId>jini-schema</artifactId>
-                <version>0.5.0</version>
+                <version>0.6.2</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

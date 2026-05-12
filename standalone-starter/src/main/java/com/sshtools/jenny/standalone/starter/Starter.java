@@ -11,9 +11,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -29,6 +31,8 @@ import com.sshtools.bootlace.api.ArtifactVersion;
 import com.sshtools.bootlace.api.BootContext;
 import com.sshtools.bootlace.api.Layer;
 import com.sshtools.bootlace.api.LayerContext;
+import com.sshtools.bootlace.api.LayerType;
+import com.sshtools.bootlace.api.ModuleParameters;
 import com.sshtools.bootlace.api.Plugin;
 import com.sshtools.bootlace.api.PluginContext;
 import com.sshtools.bootlace.api.ResolutionMonitor;
@@ -42,7 +46,7 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.ParseResult;
 
 /**
- * AdiciiD. A web based front-end for Adicii.
+ * Jenny Starter
  */
 @Command(name = "jenny-starter", description = "Default Jenny Starter", mixinStandardHelpOptions = true)
 public abstract class Starter implements Callable<Integer>, PluginContext, RootContext, BootContext, LayerContext {
@@ -156,6 +160,20 @@ public abstract class Starter implements Callable<Integer>, PluginContext, RootC
 			@Override
 			protected void appPlugins(PluginLayerInit layers) {
 			}
+
+			@Override
+			public <S> ServiceLoader<S> loadFirst(Class<S> srvType,
+					BiFunction<ModuleLayer, Class<S>, ServiceLoader<S>> loader) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public <S> Iterable<java.util.ServiceLoader.Provider<S>> loadAll(Class<S> srvType,
+					BiFunction<ModuleLayer, Class<S>, ServiceLoader<S>> loader) {
+				// TODO Auto-generated method stub
+				return null;
+			}
 		});
 	}
 
@@ -252,6 +270,26 @@ public abstract class Starter implements Callable<Integer>, PluginContext, RootC
 			@Override
 			public Access access() {
 				return Access.PUBLIC;
+			}
+
+			@Override
+			public LayerType type() {
+				return LayerType.BOOT;
+			}
+
+			@Override
+			public Optional<ModuleParameters> moduleParameters() {
+				return Optional.empty();
+			}
+
+			@Override
+			public ClassLoader loader() {
+				return Starter.this.getClass().getClassLoader();
+			}
+
+			@Override
+			public ModuleLayer moduleLayer() {
+				return Starter.this.getClass().getModule().getLayer();
 			}
 		};
 	}
