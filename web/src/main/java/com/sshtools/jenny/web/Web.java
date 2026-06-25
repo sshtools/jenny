@@ -199,7 +199,7 @@ public final class Web implements Plugin {
 			httpd.start();
 			
 			var webConfig = getWebConfig();
-			var stateSection = webConfig.obtainSection("state");
+			var stateSection = webConfig.section("state");
 			
 			stateSection.getOr("port-info").ifPresent(pi -> {
 				try(var out = new PrintWriter(Files.newBufferedWriter(Paths.get(pi)), true)) {
@@ -389,9 +389,9 @@ public final class Web implements Plugin {
 		template.variable("tx.fullContextPath", tx::fullContextPath);
 		template.variable("tx.fullPath", tx::fullPath);
 		
-		var points = extensions.points(GlobalTemplateDecorator.class);
+		var points = extensions.points(GlobalTemplateDecorator.class, tx);
 		points.forEach(dec -> {
-			dec.apply(tx).decorate(template);
+			dec.decorate(template);
 		});
 		return template;
 	}

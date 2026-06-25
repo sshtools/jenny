@@ -125,11 +125,11 @@ public class Auth implements Plugin {
 	}
 	
 	public boolean isExternalSupported() {
-		return !api.extensions().points(ExternalAuthProvider.class).isEmpty();
+		return !api.extensions().points(ExternalAuthProvider.class, null).isEmpty();
 	}
 	
 	public boolean isDirectSupported() {
-		return !api.extensions().points(DirectAuthProvider.class).isEmpty();
+		return !api.extensions().points(DirectAuthProvider.class, null).isEmpty();
 	}
 	
 	public UserPrincipal completeExternal(UUID uuid, String response) {
@@ -143,8 +143,7 @@ public class Auth implements Plugin {
 	public Optional<UserPrincipal> direct(Map<String, String> parameters) {
 		var state = AuthState.DENY;
 		UserPrincipal principal = null;
-		for(var prov : api.extensions().points(DirectAuthProvider.class)) {
-			var provInstance = prov.apply(null);
+		for(var provInstance : api.extensions().points(DirectAuthProvider.class, null)) {
 			var result = provInstance.logon(parameters);
 			switch(result.state) {
 			case ABORT:
@@ -167,8 +166,7 @@ public class Auth implements Plugin {
 	}
 	
 	public ExternalAuthSession external(Optional<String> username, String returnTo) {
-		for(var prov : api.extensions().points(ExternalAuthProvider.class)) {
-			var provInstance = prov.apply(null);
+		for(var provInstance : api.extensions().points(ExternalAuthProvider.class, null)) {
 			var location = provInstance.redirect(username, returnTo);
 			if(location.isPresent()) {
 				var session = new ExternalAuthSession(location.get(), provInstance);
@@ -182,8 +180,7 @@ public class Auth implements Plugin {
 	public UserPrincipal passwordLogon(String username, char[] password) {
 		var state = AuthState.DENY;
 		UserPrincipal principal = null;
-		for(var prov : api.extensions().points(PasswordAuthProvider.class)) {
-			var provInstance = prov.apply(null);
+		for(var provInstance : api.extensions().points(PasswordAuthProvider.class, null)) {
 			var result = provInstance.logon(username, password);
 			switch(result.state) {
 			case ABORT:
